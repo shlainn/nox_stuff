@@ -1,0 +1,66 @@
+<html>
+  <head>
+    <title>Kampfsimulator</title>
+    <script src="shipsim.js"></script>
+    <script>
+      function prepare_battle() {
+	var i;
+	
+	var attacker = {};
+	var defender = {};
+	
+	for(i in ship_types) {
+	  if( document.getElementById("g1_"+i).value != undefined && !isNaN(document.getElementById("g1_"+i).value) ) { attacker[i] = document.getElementById("g1_"+i).value }
+	  if( document.getElementById("g2_"+i).value != undefined && !isNaN(document.getElementById("g2_"+i).value) ) { defender[i] = document.getElementById("g2_"+i).value }
+	}
+	var r = document.getElementById("num_battle").value;
+	if(isNaN(r) || r == 0)
+	 r = 1;
+	var result = do_battle(attacker, defender, r);
+	console.log(result);
+	document.getElementById("result").style.display="block";
+	for(i in result) {
+	  if(typeof result[i] !== "object") {
+	    document.getElementById(i).innerHTML = result[i];
+	  } else {
+	    document.getElementById(i).innerHTML = "";
+	    for(j in result[i]) {
+	      document.getElementById(i).innerHTML +=  j + ":" + result[i][j]+"<br />";
+	    }
+	  }
+	}
+      }
+    </script>
+  </head>
+  <body>
+  <fieldset style="width:300px;display:inline-block;margin-right:0;padding:10px;border-width:4px;"><legend>Angreifer</legend>
+    <div><img src="BoongliderMini.png" /><input id="g1_B00nglider" /></div>
+    <div><img src="FighterClass1Mini.png" /><input id="g1_Haku" /></div>
+    <div><img src="FighterClass2Mini.png" /><input id="g1_Brander" /></div>
+    <div><img src="FighterClass3Mini.png" /><input id="g1_Atakebune"/></div>
+    <div><img src="FighterClass4Mini.png" /><input id="g1_TheBigOne"/></div>
+  </fieldset>
+  <fieldset style="width:300px;display:inline-block;margin-left:30px;padding:10px;border-width:4px;"><legend>Verteidiger</legend>
+    <div><img src="BoongliderMini.png" /><input id="g2_B00nglider" /></div>
+    <div><img src="FighterClass1Mini.png" /><input id="g2_Haku" /></div>
+    <div><img src="FighterClass2Mini.png" /><input id="g2_Brander" /></div>
+    <div><img src="FighterClass3Mini.png" /><input id="g2_Atakebune"/></div>
+    <div><img src="FighterClass4Mini.png" /><input id="g2_TheBigOne"/></div>
+  </fieldset>
+  <fieldset style="width:664px;"><legend>Optionen</legend>
+    <div>Wieviele Schlachten sollen simuliert werden? <input id="num_battle" /></div>
+    <div><button onclick=javascript:prepare_battle();>Simulieren</button></div>
+  </fieldset>
+  <fieldset id="result" style="width:664px;display:none"><legend>Ergebnis</legend>
+    <div>Angreifer <span id="win1"></span>:<span id="win2"></span> Verteidiger (<span id="tie"></span> Unentschieden)</div>
+    <div>Durchschnittliche Kampfdauer: <span id="dauer_schnitt"></span> Runden</div>
+    <hr />
+    <div style="background-color:#faa"><b>Flotte Angreifer</b><br/> <span id="start1"></span></div>
+    <div style="background-color:#fcc"><b>Verluste Angreifer</b><br/> <span id="loss1"></span></div>
+    <hr />
+    <div style="background-color:#aaf"><b>Flotte Verteidiger</b><br/> <span id="start2"></span></div>
+    <div style="background-color:#ccf"><b>Verluste Verteidiger</b><br/> <span id="loss2"></span></div>
+  </fieldset>
+  
+  </body>
+</html>
