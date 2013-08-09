@@ -1,10 +1,23 @@
 <html>
   <head>
     <title>Kampfsimulator</title>
-    <script src="shipsim.js"></script>
+        <script src="raphael.js"></script>
+        <script src="g.raphael.js"></script>
+        <script src="g.line.js"></script>
+        <script>
+        var raph, txtattr = { font: "12px sans-serif" };
+
+	window.onload = function () {
+
+	raph = Raphael("holder",640,1620);
+	};
+        </script>        
+        
+        
+        <script src="shipsim.js"></script>
     <script>
       function prepare_battle() {
-	var i;
+	var i, j, k, n;
 	
 	var attacker = {};
 	var defender = {};
@@ -16,16 +29,61 @@
 	var r = document.getElementById("num_battle").value;
 	if(isNaN(r) || r == 0)
 	 r = 1;
-	var result = do_battle(attacker, defender, r);
+	var result = do_battle(attacker, defender, r, true);
 	console.log(result);
 	document.getElementById("result").style.display="block";
+
+	raph.clear();
 	for(i in result) {
+	  console.log(i,typeof result[i]);
 	  if(typeof result[i] !== "object") {
 	    document.getElementById(i).innerHTML = result[i];
 	  } else {
-	    document.getElementById(i).innerHTML = "";
-	    for(j in result[i]) {
-	      document.getElementById(i).innerHTML +=  j + ":" + result[i][j]+"<br />";
+	    if (i == "details") {
+	      var line_x = [];
+	      var name = {};
+	      var lines_y = [[],[],[],[],[],[],[],[]];
+	      for( j in result.start1 ) {
+		lines_y.push([]);
+	      }
+	      for( j in result.start2 ) {
+		lines_y.push([]);
+	      }
+	      for( j = 0; j < result.details.length; j += 1) {
+		line_x.push(j);
+		n = 0;
+		for ( k in result.details[j].att_stats ) {
+		  lines_y[n].push(result.details[j].att_stats[k]);
+		  name[n]="Angreifer "+k;
+		  n += 1;
+		}
+		for ( k in result.details[j].def_stats ) {
+		  lines_y[n].push(result.details[j].def_stats[k]);
+		  name[n]="Verteidiger "+k;
+		  n += 1;
+		}
+		for ( k in result.start1 ) {
+		  lines_y[n].push(result.details[j].att_losses[k] || 0);
+		  name[n]="Angreifer Verluste "+k;
+		  n += 1;
+		}
+		for ( k in result.start2 ) {
+		  lines_y[n].push(result.details[j].def_losses[k] || 0);
+		  name[n]="Verteidiger Verluste "+k;
+		  n += 1;
+		}
+
+	      }
+	      for(j = 0; j < lines_y.length; j += 1) {
+	      raph.text(160+(320*(j%2)), 10+180*(Math.floor(j/2)), name[j]).attr(txtattr);
+	      var lines = raph.linechart(30+(320*(j%2)), 10+180*(Math.floor(j/2)), 290, 160, [line_x], lines_y[j], { nostroke: false, axis: "0 0 1 1", axisxstep: result.details.length, symbol: "circle", smooth: false });
+	      lines.symbols.attr({ r: 3 });
+	      }
+	    } else {
+	      document.getElementById(i).innerHTML = "";
+	      for(j in result[i]) {
+		document.getElementById(i).innerHTML +=  j + ":" + result[i][j]+"<br />";
+	      }
 	    }
 	  }
 	}
@@ -34,11 +92,11 @@
   </head>
   <body>
   <fieldset style="width:300px;display:inline-block;margin-right:0;padding:10px;border-width:4px;"><legend>Angreifer</legend>
-    <div><img src="BoongliderMini.png" /><input id="g1_B00nglider" /></div>
-    <div><img src="FighterClass1Mini.png" /><input id="g1_Haku" /></div>
-    <div><img src="FighterClass2Mini.png" /><input id="g1_Brander" /></div>
-    <div><img src="FighterClass3Mini.png" /><input id="g1_Atakebune"/></div>
-    <div><img src="FighterClass4Mini.png" /><input id="g1_TheBigOne"/></div>
+    <div><img src="BoongliderMini.png" /><input id="g1_B00nglider" /> 2 Crew</div>
+    <div><img src="FighterClass1Mini.png" /><input id="g1_Haku" /> 5 Crew</div>
+    <div><img src="FighterClass2Mini.png" /><input id="g1_Brander" /> 10 Crew</div>
+    <div><img src="FighterClass3Mini.png" /><input id="g1_Atakebune"/> 20 Crew</div>
+    <div><img src="FighterClass4Mini.png" /><input id="g1_TheBigOne"/> 40 Crew</div>
   </fieldset>
   <fieldset style="width:300px;display:inline-block;margin-left:30px;padding:10px;border-width:4px;"><legend>Verteidiger</legend>
     <div><img src="BoongliderMini.png" /><input id="g2_B00nglider" /></div>
@@ -60,6 +118,8 @@
     <hr />
     <div style="background-color:#aaf"><b>Flotte Verteidiger</b><br/> <span id="start2"></span></div>
     <div style="background-color:#ccf"><b>Verluste Verteidiger</b><br/> <span id="loss2"></span></div>
+      <div id="holder" style="height:1620px; width:640px"></div>
+
   </fieldset>
   
   </body>
