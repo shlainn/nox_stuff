@@ -1,0 +1,93 @@
+<html>
+  <head>
+    <title>Kampfsimulator</title>
+    <script src="shipsim.js"></script>
+    <script src="pool.js"></script>
+    <script>
+      var i = 0,j = 0;
+      var pool = new Pool(12);
+      pool.init();
+      var start;
+      var updatetable = function(e) {
+	var result = e.data.result;
+	var color = Math.floor(result.win1/e.data.r*255);
+	var color2 = Math.floor(result.win2/e.data.r*255);
+	var color3 = 255 - color - color2;
+	var tabcell = document.getElementById(e.data.name);
+	tabcell.style.backgroundColor="#"+(color.toString(16).length==1?"0"+color.toString(16):color.toString(16))+(color2.toString(16).length==1?"0"+color2.toString(16):color2.toString(16))+(color3.toString(16).length==1?"0"+color3.toString(16):color3.toString(16));
+	tabcell.innerHTML = result.win1+" : "+result.win2 + " ("+result.dauer_schnitt+")";      
+	document.title = pool.taskQueue.length+" - "+pool.workerQueue.length+ " "+ (new Date().getTime() - start)/1000;
+      }
+      
+      function battle() {
+	start = new Date().getTime();
+	var table="";
+	var thead="<tr><td></td>";
+	var a = document.getElementById("attacker").value;
+	var d = document.getElementById("defender").value;
+	var fa = document.getElementById("fillera").value;
+	var fd = document.getElementById("fillerd").value;
+	for( i = 0; i <= 1200; i += 40) {
+	  thead += "<td>"+i/ship_types[d].Crew+"&nbsp;"+d+"<br>"+((1200-i)/ship_types[fd].Crew)+"&nbsp;"+fd+"</td>";
+	  table += "<tr><td>"+i/ship_types[a].Crew+"&nbsp;"+a+"<br>"+((1200-i)/ship_types[fa].Crew)+"&nbsp;"+fa+"</td>";
+	  for( j = 0; j <= 1200; j += 40) {
+	    table += "<td id=\""+a+i+"_"+j+d+"\" style=\"text-align:center\">---</td>";
+	  }
+	  table += "</tr>";
+	}
+	document.getElementById("results").innerHTML = "<table>"+thead+"</tr>"+table+"</table>"
+	var attacker, defender;
+	var r = document.getElementById("num_battle").value;
+	if(isNaN(r) || r == 0)
+	  r = 1;
+
+
+	for( i = 0; i <= 1200; i += 40) {
+	  for( j = 0; j <= 1200; j += 40) {
+	    attacker = {};
+	    attacker[a] = i/ship_types[a].Crew;
+	    attacker[fa] = (1200-i)/ship_types[fa].Crew;
+	    defender = {};
+	    defender[d] = j/ship_types[d].Crew;
+	    defender[fd] = (1200-j)/ship_types[fd].Crew;
+	    var wp = {"attacker":attacker,"defender":defender,"r":r,"name":a+i+"_"+j+d};
+	    var workerTask = new WorkerTask('worker.js',updatetable,wp);
+	    pool.addWorkerTask(workerTask);
+	  }
+	}
+      }
+    </script>
+  </head>
+  <body>
+  <fieldset style="width:664px;"><legend>Beschreibung</legend>
+    <div>Diese Simulation untersucht den Effekt von anderen Schiffen als Füllschiff.<br>
+    Eine komplette Flotte (1200 Crew) wird zum Schiffen einer Klasse gefüllt und mit den gewählten Füllschiffen aufgefüllt.<br>
+    <b>Achtung! Kann sehr lange dauern wenn sehr viele Schlachten berechnet werden sollen. 20 ist eine gute Zahl...</b><br>
+    Aus technischen Gründen ist eine Schlacht auf max. 100 Runden begrenzt. Alles darüber hinaus wird abgebrochen.</div>
+  </fieldset>
+  <fieldset style="width:664px;"><legend>Optionen</legend>
+    <div><select id="attacker"></select> und <select id="fillera"></select><br> gegen <br> <select id="defender"></select> und <select id="fillerd"></select></div>
+    <div>Wieviele Schlachten sollen simuliert werden? <input id="num_battle" /></div>
+    <div><button onclick=javascript:battle();>Simulieren</button></div>
+  </fieldset>
+  <fieldset id="result" style="width:664px;"><legend>Ergebnis</legend>
+    <div id="results"></div>
+    <b>Legende: </b> Siege Angreifer(links) : Siege Verteidiger(oben) ( Durchschnittliche Runden )
+  </fieldset>
+  <script>
+    var att_sel = document.getElementById("attacker");
+    var def_sel = document.getElementById("defender");
+    var fila_sel = document.getElementById("fillera");
+    var fild_sel = document.getElementById("fillerd");
+    var list = "";
+    for(t in ship_types) {
+      list += "<option value=\""+t+"\">"+t+"</option>";
+    }
+    att_sel.innerHTML = list;
+    def_sel.innerHTML = list;
+    fila_sel.innerHTML = list;
+    fild_sel.innerHTML = list;
+  </script>
+    
+  </body>
+</html>
