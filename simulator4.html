@@ -45,11 +45,19 @@
 	for( i = 0; i <= 1200; i += 40) {
 	  for( j = 0; j <= 1200; j += 40) {
 	    attacker = {};
-	    attacker[a] = i/ship_types[a].Crew;
-	    attacker[fa] = (1200-i)/ship_types[fa].Crew;
+	    if( a==fa) {
+	      attacker[a] = 1200/ship_types[a].Crew;
+	    } else {
+	      attacker[a] = i/ship_types[a].Crew;
+	      attacker[fa] = (1200-i)/ship_types[fa].Crew;
+	    }
 	    defender = {};
-	    defender[d] = j/ship_types[d].Crew;
-	    defender[fd] = (1200-j)/ship_types[fd].Crew;
+	    if( d == fd ) {
+	      defender[d] = 1200/ship_types[d].Crew;
+	    } else {
+	      defender[d] = j/ship_types[d].Crew;
+	      defender[fd] = (1200-j)/ship_types[fd].Crew;
+	    }
 	    var wp = {"attacker":attacker,"defender":defender,"r":r,"name":a+i+"_"+j+d};
 	    var workerTask = new WorkerTask('worker.js',updatetable,wp);
 	    pool.addWorkerTask(workerTask);
