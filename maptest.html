@@ -600,6 +600,8 @@ var c=document.getElementById("spacemap");
 var ctx=c.getContext("2d");
 var cc=document.getElementById("spacemap_click");
 var click_ctx=cc.getContext("2d");
+
+
 // click_ctx = ctx; //DEBUG
 var tooltip_active=false;
 
@@ -620,10 +622,15 @@ function spacemap_tooltip(e){
   if(!tooltip_active)
     return;
 
+  if (!e) 
+    var e = window.event;
+
+  var offsetX = e.offsetX || e.pageX - e.originalTarget.offsetLeft;
+  var offsetY = e.offsetY || e.pageY - e.originalTarget.offsetTop;
   var click_data = click_ctx.getImageData(0,0,cc.width, cc.height);
-  var color_offset = e.offsetY*cc.width*4 + e.offsetX*4;
+  var color_offset = offsetY*cc.width*4 + offsetX*4;
   var color = click_data.data[color_offset+2] + click_data.data[color_offset+1] *256;
-  
+
   var tooltip = document.getElementById("tooltip");
   if(color == 0) {
     tooltip.style.display = "none";
@@ -734,10 +741,11 @@ function draw_stuff(list, options) {
       ctx.stroke();
 
       //draw the sun
-      ctx.fillStyle = list[i][2] == "S-Ora1" ? "#d80" : ( list[i][2] == "S-Red1" ? "#b00" : "#db0" );
-      ctx.beginPath();
-      ctx.arc(10+(list[i][3]-min.x)*(610/scale.x),250+(list[i][4]-min.y)*(240/scale.y)-(list[i][5]-min.z)*(250/scale.z),sun_size,0,2*Math.PI);
-      ctx.fill();
+      var sx = list[i][2] == "S-Ora1" ? 0 : ( list[i][2] == "S-Red1" ? 50 : 100 );
+//       ctx.beginPath();
+//       ctx.arc(10+(list[i][3]-min.x)*(610/scale.x),250+(list[i][4]-min.y)*(240/scale.y)-(list[i][5]-min.z)*(250/scale.z),sun_size,0,2*Math.PI);
+//       ctx.fill();
+      ctx.drawImage(spritesheet,sx,300,50,50,Math.floor(10+(list[i][3]-min.x)*(610/scale.x)-sun_size),Math.floor(250+(list[i][4]-min.y)*(240/scale.y)-(list[i][5]-min.z)*(250/scale.z)-sun_size),2*sun_size, 2*sun_size);
 
       //draw mouseover target on hidden canvas
       click_ctx.fillStyle="#"+pad(i.toString(16),6,"0");
@@ -781,19 +789,21 @@ function draw_stuff(list, options) {
 
       }
       
-      //draw the planet. TODO: Replace by a drawImage from actual planet bitmaps...
+      //draw the planet.
+// context.drawImage(img,sx,sy,swidth,sheight,x,y,width,height);
       switch(list[i][2].charAt(2)) {
-        case "F" :      ctx.fillStyle = "orange"; break;
-        case "W" :      ctx.fillStyle = "darkcyan"; break;
-        case "E" :      ctx.fillStyle = "darkblue"; break;
-        case "J" :      ctx.fillStyle = "green"; break;
-        case "S" :      ctx.fillStyle = "silver"; break;
-        case "D" :      ctx.fillStyle = "brown"; break;
-        default : ctx.fillStyle = "white";break;
+        case "D" :      var sy = 0; break;
+        case "E" :      var sy = 50;break;
+        case "F" :      var sy = 100; break;
+        case "J" :      var sy = 150; break;
+        case "S" :      var sy = 200; break;
+        case "W" :      var sy = 250; break;
+        default : var sy = 0;break;
       }
-      ctx.beginPath();
-      ctx.arc(10+(list[i][3]-min.x)*(610/scale.x),250+(list[i][4]-min.y)*(240/scale.y)-(list[i][5]-min.z)*(250/scale.z),planet_size,0,2*Math.PI);
-      ctx.fill();
+      ctx.drawImage(spritesheet,50*Math.floor(Math.random()*5),sy,50,50,Math.floor(10+(list[i][3]-min.x)*(610/scale.x)-planet_size),Math.floor(250+(list[i][4]-min.y)*(240/scale.y)-(list[i][5]-min.z)*(250/scale.z)-planet_size),2*planet_size, 2*planet_size);
+//       ctx.beginPath();
+//       ctx.arc(10+(list[i][3]-min.x)*(610/scale.x),250+(list[i][4]-min.y)*(240/scale.y)-(list[i][5]-min.z)*(250/scale.z),planet_size,0,2*Math.PI);
+//       ctx.fill();
       
       //and the obligatory mouseover targets
       click_ctx.fillStyle="#"+pad(i.toString(16),6,"0");
@@ -831,6 +841,10 @@ function redraw_from_values() {
   draw_options.planets_base = document.getElementById("bases").checked;
   ctx.clearRect(0,0,630,500);
   click_ctx.clearRect(0,0,630,500);
+  draw();
+}
+
+function draw() {
   draw_grid();
   draw_stuff(positions, draw_options);
 }
@@ -840,8 +854,10 @@ var center = {x:727,y:960,z:1064};
 document.getElementById("center_x").value = center.x;
 document.getElementById("center_y").value = center.y;
 document.getElementById("center_z").value = center.z;
-draw_grid();
-draw_stuff(positions, draw_options);
-// draw_stuff(positions);
+
+var spritesheet = new Image()
+spritesheet.src = "planets.png";
+spritesheet.onload = draw;
+
 </script>
 </body>
