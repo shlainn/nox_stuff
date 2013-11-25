@@ -4,11 +4,10 @@
 </head>
 <body style="background:black; color:#ddd">
 Test einer alternativen Kartendarstellung<br>
-<b>Mittelpunkt</b><br> X <input id="center_x" style="width:60px;"> Y <input id="center_y" style="width:60px;"> Z <input id="center_z" style="width:60px;"><br>
-<b>Sichtweite</b></br> <input type="radio" name="range" value="auto" checked> Automatisch <input type="radio" name="range" value="fit"> Zoom to Fit <input type="radio" name="range" value="manual"> Manuell <input id="range_value" value=150><br>
-<b>Sonstiges</b></br> <input type="checkbox" id="bases"> Planeten mit Strich zur Grundplatte<br>
+<b>Mittelpunkt</b><br> X <input id="current_x" style="width:60px;"> Y <input id="current_y" style="width:60px;"> Z <input id="current_z" style="width:60px;"><br>
+<b>Sichtweite</b></br> <input id="range_value" value=150><br>
 <button onClick=redraw_from_values()>Neu zeichnen</button><br>
-<canvas id="spacemap" style="width: 630px; height: 500px; border: 2px lime solid;" width=630 height=500 onmouseover="spacemap_tooltip_start()" onmouseout="spacemap_tooltip_stop()" onmousemove="spacemap_tooltip(event)"></canvas>
+<canvas id="spacemap" style="width: 630px; height: 500px; border: 2px lime solid;" width=630 height=500 onmouseover="spacemap_tooltip_start()" onmouseout="spacemap_tooltip_stop()" onmousemove="spacemap_tooltip(event)" onclick="spacemap_click(event)"></canvas>
 <canvas id="spacemap_click" style="width: 630px; height: 500px;border: 2px orange solid; display:none" width=630 height=500></canvas>
 <div id=tooltip style="position: absolute; display:none;border: 2px cyan solid; padding:5px; background-color:#333"></div>
 
@@ -596,6 +595,21 @@ var suns = [["PGC 58314","Sol-1","S-Ora1","275","730","203"],
 ["PGC 58314","Sol-8","S-Yel1","932","568","319"],
 ];
 
+// requestAnim shim layer by Paul Irish
+// thanks to http://paulirish.com/2011/requestanimationframe-for-smart-animating/
+window.requestAnimationFrame = (function()
+{
+    return  window.requestAnimationFrame ||
+            window.webkitRequestAnimationFrame ||
+            window.mozRequestAnimationFrame ||
+            window.oRequestAnimationFrame ||
+            window.msRequestAnimationFrame ||
+            function(/* function */ callback, /* DOMElement */ element)
+            {
+                window.setTimeout(callback, 1000 / 60); // 16 ms = ~60 fps
+            };
+})();
+
 var c=document.getElementById("spacemap");
 var ctx=c.getContext("2d");
 var cc=document.getElementById("spacemap_click");
@@ -618,6 +632,7 @@ function calc_dist(source, target) {
 }
 
 
+
 function spacemap_tooltip(e){
   if(!tooltip_active)
     return;
@@ -628,19 +643,42 @@ function spacemap_tooltip(e){
   var offsetX = e.offsetX || e.pageX - e.originalTarget.offsetLeft;
   var offsetY = e.offsetY || e.pageY - e.originalTarget.offsetTop;
   var click_data = click_ctx.getImageData(0,0,cc.width, cc.height);
-  var color_offset = offsetY*cc.width*4 + offsetX*4;
-  var color = click_data.data[color_offset+2] + click_data.data[color_offset+1] *256;
+  var planet_id_offset = offsetY*cc.width*4 + offsetX*4;
+  var planet_id = click_data.data[planet_id_offset+2] + click_data.data[planet_id_offset+1] *256;
 
   var tooltip = document.getElementById("tooltip");
-  if(color == 0) {
+  if(planet_id == 0) {
     tooltip.style.display = "none";
     return;
   }
-  tooltip.innerHTML = positions[color].slice(0,3).join("<br>")+"<br>("+positions[color].slice(3,6).join(" / ")+")<br>Distance: "+calc_dist(center,{x:positions[color][3], y:positions[color][4], z:positions[color][5]})+" pc";
+  tooltip.innerHTML = positions[planet_id].slice(0,3).join("<br>")+"<br>("+positions[planet_id].slice(3,6).join(" / ")+")<br>Distance: "+calc_dist(current,{x:positions[planet_id][3], y:positions[planet_id][4], z:positions[planet_id][5]})+" pc";
   tooltip.style.display = "block";
   tooltip.style.top = e.pageY + "px";
   tooltip.style.left = e.pageX+20 + "px";
 
+}
+
+function spacemap_click(e){
+  if (!e) 
+    var e = window.event;
+
+  var offsetX = e.offsetX || e.pageX - e.originalTarget.offsetLeft;
+  var offsetY = e.offsetY || e.pageY - e.originalTarget.offsetTop;
+  var click_data = click_ctx.getImageData(0,0,cc.width, cc.height);
+  var planet_id_offset = offsetY*cc.width*4 + offsetX*4;
+  var planet_id = click_data.data[planet_id_offset+2] + click_data.data[planet_id_offset+1] *256;
+
+  if(planet_id == 0) {
+    return;
+  }
+  target.x = parseInt(positions[planet_id][3]);
+  target.y = parseInt(positions[planet_id][4]);
+  target.z = parseInt(positions[planet_id][5]);
+  target.range = 200;
+ 
+  animate_transition_start();
+  
+  
 }
 
 
@@ -648,7 +686,7 @@ function draw_grid() {
   var i;
   ctx.beginPath(); 
   ctx.lineWidth = 2;
-  ctx.strokeStyle="#555";
+  ctx.strokeStyle="#333";
   for(i=0; i < 4; i += 1) {
     //horizontal line
     ctx.moveTo(10, 250+80*i);
@@ -658,11 +696,13 @@ function draw_grid() {
     ctx.lineTo(10+203*i, 490);
   }
   ctx.stroke();
-  ctx.fillStyle="#555";
-  ctx.font="14px Georgia";
-  for(i=0; i<9; i+=1) {
-    ctx.fillText(i+1,110+(i%3)*203,295+Math.floor(i/3)*80);
-  }
+
+//These numbers are unnecessary
+//   ctx.fillStyle="#555";
+//   ctx.font="14px Georgia";
+//   for(i=0; i<9; i+=1) {
+//     ctx.fillText(i+1,110+(i%3)*203,295+Math.floor(i/3)*80);
+//   }
 }
 
 function pad(n, width, z) {
@@ -672,47 +712,55 @@ function pad(n, width, z) {
 }
 
 function draw_stuff(list, options) {
-  list.sort(function(a,b){return a[4] - b[4]});//sort by y coordinate
   
   options = options || {};
-  options.range = options.range || "auto";
-  options.planets_base = options.planets_base || false;
-
+//   options.range = options.range || "auto";
+//   options.planets_base = options.planets_base || false;
+  options.planets_base = current.range <= 200;
   var i;
-  var min = {x:Infinity, y:Infinity, z:Infinity};
-  var max = {x:-Infinity, y:-Infinity, z:-Infinity};
-  for(i = 0; i < list.length; i += 1) {
-    min.x = Math.min(min.x, parseInt(list[i][3])-50);
-    min.y = Math.min(min.y, parseInt(list[i][4])-50);
-    min.z = Math.min(min.z, parseInt(list[i][5])-50);
-    max.x = Math.max(max.x, parseInt(list[i][3])+50);
-    max.y = Math.max(max.y, parseInt(list[i][4])+50);
-    max.z = Math.max(max.z, parseInt(list[i][5])+50);
-  }
+//   var min = {x:Infinity, y:Infinity, z:Infinity};
+//   var max = {x:-Infinity, y:-Infinity, z:-Infinity};
+//   for(i = 0; i < list.length; i += 1) {
+//     min.x = Math.min(min.x, parseInt(list[i][3])-50);
+//     min.y = Math.min(min.y, parseInt(list[i][4])-50);
+//     min.z = Math.min(min.z, parseInt(list[i][5])-50);
+//     max.x = Math.max(max.x, parseInt(list[i][3])+50);
+//     max.y = Math.max(max.y, parseInt(list[i][4])+50);
+//     max.z = Math.max(max.z, parseInt(list[i][5])+50);
+//   }
+// 
+//   if(options.range == "auto") { // calculate range so that current is in the middle
+//     var scale = {x : Math.max(Math.abs(current.x-min.x),Math.abs(current.x-max.x))*2,
+//       y : Math.max(Math.abs(current.y-min.y),Math.abs(current.y-max.y))*2,
+//       z : Math.max(Math.abs(current.z-min.z),Math.abs(current.z-max.z))*2,
+//     }
+//   } else if (options.range == "fit") { //calculate range so that everything nicely fits into view 
+//     var scale = {x : max.x - min.x,
+//       y : max.y - min.y,
+//       z : max.z - min.z,
+//     }
+//   } else {//preset range
+//     var scale = {x : options.range*2,
+//       y : options.range*2,
+//       z : options.range*2,
+//     }
+//     var min = { x : current.x - options.range,
+//       y : current.y - options.range,
+//       z : current.z - options.range,
+//     }
+//   }
 
-  if(options.range == "auto") { // calculate range so that center is in the middle
-    var scale = {x : Math.max(Math.abs(center.x-min.x),Math.abs(center.x-max.x))*2,
-      y : Math.max(Math.abs(center.y-min.y),Math.abs(center.y-max.y))*2,
-      z : Math.max(Math.abs(center.z-min.z),Math.abs(center.z-max.z))*2,
+    var scale = {x : current.range*2,
+      y : current.range*2,
+      z : current.range*2,
     }
-  } else if (options.range == "fit") { //calculate range so that everything nicely fits into view 
-    var scale = {x : max.x - min.x,
-      y : max.y - min.y,
-      z : max.z - min.z,
+    var min = { x : current.x - current.range,
+      y : current.y - current.range,
+      z : current.z - current.range,
     }
-  } else {//preset range
-    var scale = {x : options.range*2,
-      y : options.range*2,
-      z : options.range*2,
-    }
-    var min = { x : center.x - options.range,
-      y : center.y - options.range,
-      z : center.z - options.range,
-    }
-  }
 
   //Planet and sun radius
-  var planet_size = scale.x >= 500? 4 : 6;
+  var planet_size = scale.x > 500 ? 4 : 6;
   var sun_size = planet_size*2;
 
   var textboxes = [];
@@ -722,6 +770,7 @@ function draw_stuff(list, options) {
     if(10+(list[i][3]-min.x)*(610/scale.x) < 10 || (250+(list[i][4]-min.y)*(240/scale.y)) < 250 || 250+(list[i][4]-min.y)*(240/scale.y)-(list[i][5]-min.z)*(250/scale.z) < 10)
       continue;
 
+    //Note: This switch is only temporary. A field with the exact Object type will be needed.
     var sun = list[i][2].charAt(0) == "S";
     ctx.lineWidth = 1;
     if(sun) {
@@ -741,10 +790,8 @@ function draw_stuff(list, options) {
       ctx.stroke();
 
       //draw the sun
+      //Note: This switch is only temporary. A field with the exact Object type will be needed.
       var sx = list[i][2] == "S-Ora1" ? 0 : ( list[i][2] == "S-Red1" ? 50 : 100 );
-//       ctx.beginPath();
-//       ctx.arc(10+(list[i][3]-min.x)*(610/scale.x),250+(list[i][4]-min.y)*(240/scale.y)-(list[i][5]-min.z)*(250/scale.z),sun_size,0,2*Math.PI);
-//       ctx.fill();
       ctx.drawImage(spritesheet,sx,300,50,50,Math.floor(10+(list[i][3]-min.x)*(610/scale.x)-sun_size),Math.floor(250+(list[i][4]-min.y)*(240/scale.y)-(list[i][5]-min.z)*(250/scale.z)-sun_size),2*sun_size, 2*sun_size);
 
       //draw mouseover target on hidden canvas
@@ -779,7 +826,7 @@ function draw_stuff(list, options) {
         click_ctx.save()
         click_ctx.translate(Math.floor(10+(list[i][3]-min.x)*(610/scale.x)),Math.floor((250+(list[i][4]-min.y)*(240/scale.y))))
         click_ctx.scale(1,0.5);//make the circle an ellipse
-	click_ctx.fillRect(-planet_size,-planet_size,2*planet_size, 2*planet_size);
+        click_ctx.fillRect(-planet_size,-planet_size,2*planet_size, 2*planet_size);
         click_ctx.restore()
         
         ctx.beginPath();
@@ -790,7 +837,8 @@ function draw_stuff(list, options) {
       }
       
       //draw the planet.
-// context.drawImage(img,sx,sy,swidth,sheight,x,y,width,height);
+      //Note: This switch is only temporary. A field with the exact Object type will be needed.
+
       switch(list[i][2].charAt(2)) {
         case "D" :      var sy = 0; break;
         case "E" :      var sy = 50;break;
@@ -800,10 +848,7 @@ function draw_stuff(list, options) {
         case "W" :      var sy = 250; break;
         default : var sy = 0;break;
       }
-      ctx.drawImage(spritesheet,50*Math.floor(Math.random()*5),sy,50,50,Math.floor(10+(list[i][3]-min.x)*(610/scale.x)-planet_size),Math.floor(250+(list[i][4]-min.y)*(240/scale.y)-(list[i][5]-min.z)*(250/scale.z)-planet_size),2*planet_size, 2*planet_size);
-//       ctx.beginPath();
-//       ctx.arc(10+(list[i][3]-min.x)*(610/scale.x),250+(list[i][4]-min.y)*(240/scale.y)-(list[i][5]-min.z)*(250/scale.z),planet_size,0,2*Math.PI);
-//       ctx.fill();
+      ctx.drawImage(spritesheet,0/*replace by type soon*/,sy,50,50,Math.floor(10+(list[i][3]-min.x)*(610/scale.x)-planet_size),Math.floor(250+(list[i][4]-min.y)*(240/scale.y)-(list[i][5]-min.z)*(250/scale.z)-planet_size),2*planet_size, 2*planet_size);
       
       //and the obligatory mouseover targets
       click_ctx.fillStyle="#"+pad(i.toString(16),6,"0");
@@ -826,38 +871,83 @@ function draw_stuff(list, options) {
 }
 
 function redraw_from_values() {
-  center.x = document.getElementById("center_x").value || 500;
-  center.y = document.getElementById("center_y").value || 500;
-  center.z = document.getElementById("center_z").value || 500;
-  range = document.getElementsByName("range");
-  for(var i = 0; i < range.length; i += 1) {
-    if(range[i].checked) {
-      draw_options.range = range[i].value;
-    }
-  }
-  if(draw_options.range == "manual") {
-    draw_options.range = document.getElementById("range_value").value || 500;
-  }
-  draw_options.planets_base = document.getElementById("bases").checked;
-  ctx.clearRect(0,0,630,500);
-  click_ctx.clearRect(0,0,630,500);
-  draw();
+  target.x = parseInt(document.getElementById("current_x").value) || 500;
+  target.y = parseInt(document.getElementById("current_y").value) || 500;
+  target.z = parseInt(document.getElementById("current_z").value) || 500;
+  target.range = parseInt(document.getElementById("range_value").value) || 500;
+ 
+  animate_transition_start();
 }
 
+function animate_transition_start() {
+  animation_start = null;
+    start.x = current.x;
+    start.y = current.y;
+    start.z = current.z;
+    start.range = current.range;
+  requestAnimationFrame(animate_transition);
+}
+
+function animate_transition(time) {
+  if (animation_start === null) animation_start = time;
+  current.x = easeInOutCubic(time-animation_start, start.x, target.x- start.x , animation_duration);
+  current.y = easeInOutCubic(time-animation_start, start.y, target.y- start.y , animation_duration);
+  current.z = easeInOutCubic(time-animation_start, start.z, target.z- start.z , animation_duration);
+  current.range = easeInOutCubic(time-animation_start, start.range, target.range- start.range, animation_duration);
+  draw();
+
+  if(time-animation_start < animation_duration) {
+    requestAnimationFrame(animate_transition);
+  } else {
+    current.x = target.x;
+    current.y = target.y;
+    current.z = target.z;
+    current.range = target.range;
+    draw();
+  }
+document.getElementById("current_x").value = current.x;
+document.getElementById("current_y").value = current.y;
+document.getElementById("current_z").value = current.z;
+document.getElementById("range_value").value = current.range;
+
+}
+
+// http://www.gizma.com/easing/#cub3
+// t: current time
+// b: starting value
+// c: delta value
+// d: duration
+easeInOutCubic = function (t, b, c, d) {
+    console.log(t, b, c, d);
+    t /= d/2;
+    if (t < 1) return c/2*t*t*t + b;
+    t -= 2;
+    return c/2*(t*t*t + 2) + b;
+};
+
+
 function draw() {
+  ctx.clearRect(0,0,630,500);
+  click_ctx.clearRect(0,0,630,500);
   draw_grid();
   draw_stuff(positions, draw_options);
 }
 
-var draw_options = {range: undefined, planets_base: false};
-var center = {x:727,y:960,z:1064};
-document.getElementById("center_x").value = center.x;
-document.getElementById("center_y").value = center.y;
-document.getElementById("center_z").value = center.z;
+var animation_start;
+var animation_duration = 3000; //3 sec ?
+var draw_options = {planets_base: false};
+var target = {x:727,y:960,z:1064, range: 800};
+var current = {x:500, y: 500, z: 500, range: 2000};
+var start = {x:500, y: 500, z: 500, range: 2000};
+document.getElementById("current_x").value = current.x;
+document.getElementById("current_y").value = current.y;
+document.getElementById("current_z").value = current.z;
+
+positions.sort(function(a,b){return a[4] - b[4]});//sort by y coordinate
 
 var spritesheet = new Image()
 spritesheet.src = "planets.png";
-spritesheet.onload = draw;
+spritesheet.onload = animate_transition_start;
 
 </script>
 </body>
