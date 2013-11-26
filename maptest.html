@@ -5,7 +5,8 @@
 <body style="background:black; color:#ddd">
 Test einer alternativen Kartendarstellung<br>
 <b>Mittelpunkt</b><br> X <input id="current_x" style="width:60px;"> Y <input id="current_y" style="width:60px;"> Z <input id="current_z" style="width:60px;"><br>
-<b>Sichtweite</b></br> <input id="range_value" value=150><br>
+<b>Sichtweite</b></br> <input id="current_range" value=150><br>
+<b>Drehung</b></br> <input id="current_angle" value=0><br>
 <button onClick=redraw_from_values()>Neu zeichnen</button><br>
 <canvas id="spacemap" style="width: 630px; height: 500px; border: 2px lime solid;" width=630 height=500 onmouseover="spacemap_tooltip_start()" onmouseout="spacemap_tooltip_stop()" onmousemove="spacemap_tooltip(event)" onclick="spacemap_click(event)"></canvas>
 <canvas id="spacemap_click" style="width: 630px; height: 500px;border: 2px orange solid; display:none" width=630 height=500></canvas>
@@ -595,6 +596,15 @@ var suns = [["PGC 58314","Sol-1","S-Ora1","275","730","203"],
 ["PGC 58314","Sol-8","S-Yel1","932","568","319"],
 ];
 
+var test_sys = [["Test","Center","S-Center","500","500","500"],
+["Test","ZUp","S-ZUp","500","500","750"],
+["Test","ZDn","S-ZDn","500","500","250"],
+["Test","YUp","S-YUp","500","750","500"],
+["Test","YDn","S-YDn","500","250","500"],
+["Test","XUp","S-XUp","750","500","500"],
+["Test","XDn","S-XDn","250","500","500"],
+];
+
 // requestAnim shim layer by Paul Irish
 // thanks to http://paulirish.com/2011/requestanimationframe-for-smart-animating/
 window.requestAnimationFrame = (function()
@@ -718,6 +728,10 @@ function draw_stuff(list, options) {
 //   options.planets_base = options.planets_base || false;
   options.planets_base = current.range <= 200;
   var i;
+  
+  
+  
+  
 //   var min = {x:Infinity, y:Infinity, z:Infinity};
 //   var max = {x:-Infinity, y:-Infinity, z:-Infinity};
 //   for(i = 0; i < list.length; i += 1) {
@@ -765,9 +779,30 @@ function draw_stuff(list, options) {
 
   var textboxes = [];
   for(i = 0; i < list.length; i += 1) {
-    if(10+(list[i][3]-min.x)*(610/scale.x) > 620 || (250+(list[i][4]-min.y)*(240/scale.y)) > 490 || 250+(list[i][4]-min.y)*(240/scale.y)-(list[i][5]-min.z)*(250/scale.z) > 490)
+    var x = list[i][3];
+    var y = list[i][4];
+    var z = list[i][5];
+    
+    var angle = (current.angle % 360) / 180 * Math.PI;
+    // rotate around current position
+    //translate to origin, then rotate, then translate back;
+    x -= current.x;
+    y -= current.y;
+    var xnew = x * Math.cos(angle) - y * Math.sin(angle);
+    var ynew = y * Math.cos(angle) + x * Math.sin(angle);
+    x = xnew + current.x;
+    y = ynew + current.y;
+    
+    
+    //Position calculations
+    //magic numbers here are derived from canvas width and height, with a 10px padding
+    var screen_x = 10+(x-min.x)*(610/scale.x);
+    var screen_y = 250+(y-min.y)*(240/scale.y);
+    var z_offset = (z-min.z)*(250/scale.z);
+    
+    if(screen_x > 620 || screen_y > 490 || screen_y-z_offset > 490)
       continue;
-    if(10+(list[i][3]-min.x)*(610/scale.x) < 10 || (250+(list[i][4]-min.y)*(240/scale.y)) < 250 || 250+(list[i][4]-min.y)*(240/scale.y)-(list[i][5]-min.z)*(250/scale.z) < 10)
+    if(screen_x < 10 || screen_y < 250 || screen_y-z_offset < 10)
       continue;
 
     //Note: This switch is only temporary. A field with the exact Object type will be needed.
@@ -778,36 +813,35 @@ function draw_stuff(list, options) {
       ctx.strokeStyle="lime";
       ctx.save()
       ctx.beginPath();
-      ctx.translate(10+(list[i][3]-min.x)*(610/scale.x),(250+(list[i][4]-min.y)*(240/scale.y)))
+      ctx.translate(screen_x,screen_y)
       ctx.scale(1,0.5);
       ctx.arc(0,0,sun_size/2,0,2*Math.PI);
       ctx.stroke();
       ctx.restore()
             
       ctx.beginPath();
-      ctx.moveTo(10+(list[i][3]-min.x)*(610/scale.x),250+(list[i][4]-min.y)*(240/scale.y));
-      ctx.lineTo(10+(list[i][3]-min.x)*(610/scale.x),250+(list[i][4]-min.y)*(240/scale.y)-(list[i][5]-min.z)*(250/scale.z));
+      ctx.moveTo(screen_x,screen_y);
+      ctx.lineTo(screen_x,screen_y-z_offset);
       ctx.stroke();
 
       //draw the sun
       //Note: This switch is only temporary. A field with the exact Object type will be needed.
       var sx = list[i][2] == "S-Ora1" ? 0 : ( list[i][2] == "S-Red1" ? 50 : 100 );
-      ctx.drawImage(spritesheet,sx,300,50,50,Math.floor(10+(list[i][3]-min.x)*(610/scale.x)-sun_size),Math.floor(250+(list[i][4]-min.y)*(240/scale.y)-(list[i][5]-min.z)*(250/scale.z)-sun_size),2*sun_size, 2*sun_size);
+      ctx.drawImage(spritesheet,sx,300,50,50,Math.floor(screen_x-sun_size),Math.floor(screen_y-z_offset-sun_size),2*sun_size, 2*sun_size);
 
       //draw mouseover target on hidden canvas
       click_ctx.fillStyle="#"+pad(i.toString(16),6,"0");
       click_ctx.save()
-      click_ctx.translate(Math.floor(10+(list[i][3]-min.x)*(610/scale.x)),Math.floor((250+(list[i][4]-min.y)*(240/scale.y))));
+      click_ctx.translate(Math.floor(screen_x),Math.floor(screen_y));
       click_ctx.scale(1,0.5);
       click_ctx.fillRect(-sun_size,-sun_size,2*sun_size, 2*sun_size);
       click_ctx.restore()
 
-      click_ctx.fillRect(Math.floor(10+(list[i][3]-min.x)*(610/scale.x)-sun_size),Math.floor(250+(list[i][4]-min.y)*(240/scale.y)-(list[i][5]-min.z)*(250/scale.z)-sun_size),2*sun_size, 2*sun_size);
+      click_ctx.fillRect(Math.floor(screen_x-sun_size),Math.floor(screen_y-z_offset-sun_size),2*sun_size, 2*sun_size);
       
       //textboxes drawn last
-      textboxes.push([list[i][1],20+(list[i][3]-min.x)*(610/scale.x),265+(list[i][4]-min.y)*(240/scale.y)-(list[i][5]-min.z)*(250/scale.z)]);
+      textboxes.push([list[i][1],10+screen_x,15+screen_y-z_offset]);
       
-//       ctx.fillText();
     } else {
       // it's a planet!
       if(options.planets_base) {
@@ -815,7 +849,7 @@ function draw_stuff(list, options) {
         ctx.strokeStyle="#070";
         ctx.save()
         ctx.beginPath();
-        ctx.translate(10+(list[i][3]-min.x)*(610/scale.x),(250+(list[i][4]-min.y)*(240/scale.y)))
+        ctx.translate(screen_x,screen_y)
         ctx.scale(1,0.5);//make the circle an ellipse
         ctx.arc(0,0,planet_size/2,0,2*Math.PI);
         ctx.stroke();
@@ -824,14 +858,14 @@ function draw_stuff(list, options) {
         //and the mouseover target of course
         click_ctx.fillStyle="#"+pad(i.toString(16),6,"0");;
         click_ctx.save()
-        click_ctx.translate(Math.floor(10+(list[i][3]-min.x)*(610/scale.x)),Math.floor((250+(list[i][4]-min.y)*(240/scale.y))))
+        click_ctx.translate(Math.floor(screen_x),Math.floor(screen_y))
         click_ctx.scale(1,0.5);//make the circle an ellipse
         click_ctx.fillRect(-planet_size,-planet_size,2*planet_size, 2*planet_size);
         click_ctx.restore()
         
         ctx.beginPath();
-        ctx.moveTo(10+(list[i][3]-min.x)*(610/scale.x),250+(list[i][4]-min.y)*(240/scale.y));
-        ctx.lineTo(10+(list[i][3]-min.x)*(610/scale.x),250+(list[i][4]-min.y)*(240/scale.y)-(list[i][5]-min.z)*(250/scale.z));
+        ctx.moveTo(screen_x,screen_y);
+        ctx.lineTo(screen_x,screen_y-z_offset);
         ctx.stroke();
 
       }
@@ -848,11 +882,11 @@ function draw_stuff(list, options) {
         case "W" :      var sy = 250; break;
         default : var sy = 0;break;
       }
-      ctx.drawImage(spritesheet,0/*replace by type soon*/,sy,50,50,Math.floor(10+(list[i][3]-min.x)*(610/scale.x)-planet_size),Math.floor(250+(list[i][4]-min.y)*(240/scale.y)-(list[i][5]-min.z)*(250/scale.z)-planet_size),2*planet_size, 2*planet_size);
+      ctx.drawImage(spritesheet,0/*replace by type soon*/,sy,50,50,Math.floor(screen_x-planet_size),Math.floor(screen_y-z_offset-planet_size),2*planet_size, 2*planet_size);
       
       //and the obligatory mouseover targets
       click_ctx.fillStyle="#"+pad(i.toString(16),6,"0");
-      click_ctx.fillRect(Math.floor(10+(list[i][3]-min.x)*(610/scale.x)-planet_size),Math.floor(250+(list[i][4]-min.y)*(240/scale.y)-(list[i][5]-min.z)*(250/scale.z)-planet_size),2*planet_size, 2*planet_size);
+      click_ctx.fillRect(Math.floor(screen_x-planet_size),Math.floor(screen_y-z_offset-planet_size),2*planet_size, 2*planet_size);
 
     }
 
@@ -871,10 +905,9 @@ function draw_stuff(list, options) {
 }
 
 function redraw_from_values() {
-  target.x = parseInt(document.getElementById("current_x").value) || 500;
-  target.y = parseInt(document.getElementById("current_y").value) || 500;
-  target.z = parseInt(document.getElementById("current_z").value) || 500;
-  target.range = parseInt(document.getElementById("range_value").value) || 500;
+  for(i in target) {
+    target[i] = parseInt(document.getElementById("current_"+i).value);
+  }
  
   animate_transition_start();
 }
@@ -885,31 +918,28 @@ function animate_transition_start() {
     start.y = current.y;
     start.z = current.z;
     start.range = current.range;
+    start.angle = current.angle;
   requestAnimationFrame(animate_transition);
 }
 
 function animate_transition(time) {
   if (animation_start === null) animation_start = time;
-  current.x = easeInOutCubic(time-animation_start, start.x, target.x- start.x , animation_duration);
-  current.y = easeInOutCubic(time-animation_start, start.y, target.y- start.y , animation_duration);
-  current.z = easeInOutCubic(time-animation_start, start.z, target.z- start.z , animation_duration);
-  current.range = easeInOutCubic(time-animation_start, start.range, target.range- start.range, animation_duration);
+  for(i in current) {
+    current[i] = easeInOutCubic(time-animation_start, start[i], target[i]- start[i] , animation_duration);
+  }
   draw();
 
   if(time-animation_start < animation_duration) {
     requestAnimationFrame(animate_transition);
   } else {
-    current.x = target.x;
-    current.y = target.y;
-    current.z = target.z;
-    current.range = target.range;
+    for(i in current) {
+      current[i] = target[i];
+    }
     draw();
   }
-document.getElementById("current_x").value = current.x;
-document.getElementById("current_y").value = current.y;
-document.getElementById("current_z").value = current.z;
-document.getElementById("range_value").value = current.range;
-
+    for(i in current) {
+      document.getElementById("current_"+i).value = current[i];
+    }
 }
 
 // http://www.gizma.com/easing/#cub3
@@ -936,13 +966,13 @@ function draw() {
 var animation_start;
 var animation_duration = 3000; //3 sec ?
 var draw_options = {planets_base: false};
-var target = {x:727,y:960,z:1064, range: 800};
-var current = {x:500, y: 500, z: 500, range: 2000};
-var start = {x:500, y: 500, z: 500, range: 2000};
+var target = {x:727,y:960,z:1064, range: 800, angle: 60};
+var current = {x:500, y: 500, z: 500, range: 2000, angle: 0};
+var start = {x:500, y: 500, z: 500, range: 2000, angle: 0};
 document.getElementById("current_x").value = current.x;
 document.getElementById("current_y").value = current.y;
 document.getElementById("current_z").value = current.z;
-
+// positions = test_sys;
 positions.sort(function(a,b){return a[4] - b[4]});//sort by y coordinate
 
 var spritesheet = new Image()
