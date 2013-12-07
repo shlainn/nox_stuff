@@ -3,14 +3,30 @@
 <head><title>map test</title>
 </head>
 <body style="background:black; color:#ddd">
+
+<div style="float:left;padding: 20px;">
+<canvas id="spacemap" style="width: 630px; height: 500px; border: 2px lime solid;" width=630 height=500 onmouseover="spacemap_tooltip_start()" onmouseout="spacemap_tooltip_stop()" onmousemove="spacemap_tooltip(event)" onclick="spacemap_click(event)"></canvas>
+<canvas id="spacemap_click" style="width: 630px; height: 500px;border: 2px orange solid; display:none" width=630 height=500></canvas>
+<div id=tooltip style="position: absolute; display:none;border: 2px cyan solid; padding:5px; background-color:#333"></div>
+</div>
+
+<div style="float:left;padding: 20px;">
 Test einer alternativen Kartendarstellung<br>
 <b>Mittelpunkt</b><br> X <input id="current_x" style="width:60px;"> Y <input id="current_y" style="width:60px;"> Z <input id="current_z" style="width:60px;"><br>
 <b>Sichtweite</b></br> <input id="current_range" value=150><br>
 <b>Drehung</b></br> <input id="current_angle" value=0><br>
-<button onClick=redraw_from_values()>Neu zeichnen</button><br>
-<canvas id="spacemap" style="width: 630px; height: 500px; border: 2px lime solid;" width=630 height=500 onmouseover="spacemap_tooltip_start()" onmouseout="spacemap_tooltip_stop()" onmousemove="spacemap_tooltip(event)" onclick="spacemap_click(event)"></canvas>
-<canvas id="spacemap_click" style="width: 630px; height: 500px;border: 2px orange solid; display:none" width=630 height=500></canvas>
-<div id=tooltip style="position: absolute; display:none;border: 2px cyan solid; padding:5px; background-color:#333"></div>
+<b>Darstellung</b></br>
+Planetenradius min <input id="planet_min" value=4> max <input id="planet_max" value=15><br>
+Sternenradius min <input id="star_min" value=8> max <input id="star_max" value=25><br>
+<button onClick=redraw_from_values()>Neu zeichnen</button><br><br>
+<a href=# onclick="zoom_in()" style="width:32px;height:32px;display:inline-block;background:url(icons.png) -444px -45px"></a>
+<a href=# onclick="reset_view()" style="width:32px;height:32px;display:inline-block;background:url(icons.png) -484px -5px"></a>
+<a href=# onclick="zoom_out()" style="width:32px;height:32px;display:inline-block;background:url(icons.png) -484px -45px"></a><br>
+<a href=# onclick="rotate_left()" style="width:32px;height:32px;display:inline-block;background:url(icons.png) -324px -165px"></a>
+<a href=# onclick="fleet_scan()" style="width:32px;height:32px;display:inline-block;background:url(icons.png) -244px -205px"></a>
+<a href=# onclick="rotate_right()" style="width:32px;height:32px;display:inline-block;background:url(icons.png) -364px -165px"></a><br>
+</div>
+
 
 <script>
 var positions = [["PGC 58314","Sol-1","S-Ora1","275","730","203"],
@@ -684,7 +700,7 @@ function spacemap_click(e){
   target.x = parseInt(positions[planet_id][3]);
   target.y = parseInt(positions[planet_id][4]);
   target.z = parseInt(positions[planet_id][5]);
-  target.range = 200;
+//   target.range = 200;
  
   animate_transition_start();
   
@@ -764,18 +780,21 @@ function draw_stuff(list, options) {
 //     }
 //   }
 
-    var scale = {x : current.range*2,
-      y : current.range*2,
-      z : current.range*2,
-    }
+    var scale = current.range*2;
+
     var min = { x : current.x - current.range,
       y : current.y - current.range,
       z : current.z - current.range,
     }
 
   //Planet and sun radius
-  var planet_size = scale.x > 500 ? 4 : 6;
-  var sun_size = planet_size*2;
+  //Temp for Testing
+  var planet_min = parseInt(document.getElementById("planet_min").value);
+  var planet_max = parseInt(document.getElementById("planet_max").value);
+  var planet_size = current.range >= 550 ? planet_min : current.range <= 50 ? planet_max : planet_max-Math.floor( ((current.range-50)/500) * (planet_max-planet_min));
+  var star_min = parseInt(document.getElementById("star_min").value);
+  var star_max = parseInt(document.getElementById("star_max").value);
+  var sun_size = current.range >= 550 ? star_min : current.range <= 50 ? star_max : star_max-Math.floor( ((current.range-50)/500) * (star_max-star_min));
 
   var textboxes = [];
   for(i = 0; i < list.length; i += 1) {
@@ -796,9 +815,9 @@ function draw_stuff(list, options) {
     
     //Position calculations
     //magic numbers here are derived from canvas width and height, with a 10px padding
-    var screen_x = 10+(x-min.x)*(610/scale.x);
-    var screen_y = 250+(y-min.y)*(240/scale.y);
-    var z_offset = (z-min.z)*(250/scale.z);
+    var screen_x = 10+(x-min.x)*(610/scale);
+    var screen_y = 250+(y-min.y)*(240/scale);
+    var z_offset = (z-min.z)*(250/scale);
     
     if(screen_x > 620 || screen_y > 490 || screen_y-z_offset > 490)
       continue;
@@ -913,13 +932,17 @@ function redraw_from_values() {
 }
 
 function animate_transition_start() {
+  check_values();
   animation_start = null;
     start.x = current.x;
     start.y = current.y;
     start.z = current.z;
     start.range = current.range;
     start.angle = current.angle;
-  requestAnimationFrame(animate_transition);
+  if(!animation_running) {
+    animation_running = true
+    requestAnimationFrame(animate_transition);
+  }
 }
 
 function animate_transition(time) {
@@ -932,14 +955,15 @@ function animate_transition(time) {
   if(time-animation_start < animation_duration) {
     requestAnimationFrame(animate_transition);
   } else {
+    animation_running = false; // end the animation;
     for(i in current) {
       current[i] = target[i];
     }
     draw();
   }
-    for(i in current) {
-      document.getElementById("current_"+i).value = current[i];
-    }
+  for(i in current) {
+    document.getElementById("current_"+i).value = current[i];
+  }
 }
 
 // http://www.gizma.com/easing/#cub3
@@ -948,12 +972,13 @@ function animate_transition(time) {
 // c: delta value
 // d: duration
 easeInOutCubic = function (t, b, c, d) {
-    console.log(t, b, c, d);
     t /= d/2;
     if (t < 1) return c/2*t*t*t + b;
     t -= 2;
     return c/2*(t*t*t + 2) + b;
 };
+
+
 
 
 function draw() {
@@ -963,11 +988,68 @@ function draw() {
   draw_stuff(positions, draw_options);
 }
 
+function check_values() {
+  if(target.range <=10)
+    target.range = 10;
+  if(target.range >=2000)
+    target.range = 2000;
+  if((target.angle > 360 && current.angle > 360) || (target.angle < -360 && current.angle < -360) ) {
+    target.angle %= 360;
+    current.angle %= 360;
+  }
+  
+}
+
+function zoom_in() {
+  target.range -= 100;
+  animate_transition_start();
+}
+
+function zoom_out() {
+  target.range += 100;
+  animate_transition_start();
+}
+
+function rotate_left() {
+  target.angle -= 60;
+  animate_transition_start();
+}
+function rotate_right() {
+  target.angle += 60;
+  animate_transition_start();
+}
+
+function reset_view() {
+  var min = {x:Infinity, y:Infinity, z:Infinity};
+  var max = {x:-Infinity, y:-Infinity, z:-Infinity};
+  for(i = 0; i < positions.length; i += 1) {
+    min.x = Math.min(min.x, parseInt(positions[i][3])-50);
+    min.y = Math.min(min.y, parseInt(positions[i][4])-50);
+    min.z = Math.min(min.z, parseInt(positions[i][5])-50);
+    max.x = Math.max(max.x, parseInt(positions[i][3])+50);
+    max.y = Math.max(max.y, parseInt(positions[i][4])+50);
+    max.z = Math.max(max.z, parseInt(positions[i][5])+50);
+  }
+  target.range = Math.max(max.x - min.x,max.y - min.y,max.z - min.z)/2;
+  target.x = min.x+(max.x - min.x)/2;
+  target.y = min.y+(max.y - min.y)/2;
+  target.z = min.z+(max.z - min.z)/2;
+  target.angle = 0;
+  console.log(target);
+  animate_transition_start();
+}
+
+function fleet_scan(){
+  //TODO
+  alert("Scanner Malfunction! Error ID: 0x1337");
+}
+
 var animation_start;
-var animation_duration = 3000; //3 sec ?
+var animation_running;
+var animation_duration = 2000; //3 sec ?
 var draw_options = {planets_base: false};
-var target = {x:727,y:960,z:1064, range: 800, angle: 60};
-var current = {x:500, y: 500, z: 500, range: 2000, angle: 0};
+var target = {x:727,y:945,z:1032, range: 800, angle: 0};
+var current = {x:727, y: 945, z: 1032, range: 10, angle: 180};
 var start = {x:500, y: 500, z: 500, range: 2000, angle: 0};
 document.getElementById("current_x").value = current.x;
 document.getElementById("current_y").value = current.y;
@@ -977,7 +1059,7 @@ positions.sort(function(a,b){return a[4] - b[4]});//sort by y coordinate
 
 var spritesheet = new Image()
 spritesheet.src = "planets.png";
-spritesheet.onload = animate_transition_start;
+spritesheet.onload = reset_view;
 
 </script>
 </body>
