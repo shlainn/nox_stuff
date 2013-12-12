@@ -23,12 +23,107 @@ Sternenradius min <input id="star_min" value=8> max <input id="star_max" value=2
 <a href=# onclick="reset_view()" style="width:32px;height:32px;display:inline-block;background:url(icons.png) -484px -5px"></a>
 <a href=# onclick="zoom_out()" style="width:32px;height:32px;display:inline-block;background:url(icons.png) -484px -45px"></a><br>
 <a href=# onclick="rotate_left()" style="width:32px;height:32px;display:inline-block;background:url(icons.png) -324px -165px"></a>
-<a href=# onclick="fleet_scan()" style="width:32px;height:32px;display:inline-block;background:url(icons.png) -244px -205px"></a>
+<a href=# onclick="fleet_scan()" title="Scan Starten" style="width:32px;height:32px;display:inline-block;background:url(icons.png) -244px -205px"></a>
 <a href=# onclick="rotate_right()" style="width:32px;height:32px;display:inline-block;background:url(icons.png) -364px -165px"></a><br>
+<a href=# onclick="draw_fleet_positions()" title="Flotten Anzeigen(DEBUG)" style="width:32px;height:32px;display:inline-block;background:url(icons.png) -244px -245px"></a>
 </div>
 
 
 <script>
+var sector_number = 3;
+var fleets, myfleets, fleet_sectors, fleet_index;
+var xleets = {
+  "myFleets": [
+    {
+      "planetId": null,
+      "id": "7412",
+      "name": "flufluf",
+      "state": "HangingAround",
+      "mission": "NoMission",
+      "canBeSupplied": 1,
+      "canBeAttacked": 0,
+      "canBeInspected": 0,
+      "hiddenFleet": false,
+      "isAlien": false,
+      "destination": null,
+      "currentPosX": "727.0",
+      "currentPosY": "945.0",
+      "currentPosZ": "1032.0",
+      "currentGalaxyId": null
+    },
+    {
+      "planetId": null,
+      "id": "7374",
+      "name": "Gu",
+      "state": "HangingAround",
+      "mission": "NoMission",
+      "canBeSupplied": 1,
+      "canBeAttacked": 0,
+      "canBeInspected": 0,
+      "hiddenFleet": false,
+      "isAlien": false,
+      "destination": null,
+      "currentPosX": "729.0",
+      "currentPosY": "962.0",
+      "currentPosZ": "1066.0",
+      "currentGalaxyId": null
+    },
+    {
+      "planetId": null,
+      "id": "7470",
+      "name": "Mimimi",
+      "state": "HangingAround",
+      "mission": "NoMission",
+      "canBeSupplied": 1,
+      "canBeAttacked": 0,
+      "canBeInspected": 0,
+      "hiddenFleet": false,
+      "isAlien": false,
+      "destination": null,
+      "currentPosX": "727.0",
+      "currentPosY": "945.0",
+      "currentPosZ": "1032.0",
+      "currentGalaxyId": null
+    }
+  ],
+  "foreignFleets": [
+    {
+      "planetId": null,
+      "id": "5378",
+      "name": "FlotteI",
+      "state": "AtHome",
+      "onVacation": "0",
+      "mission": "NoMission",
+      "canBeSupplied": 0,
+      "canBeAttacked": 0,
+      "canBeInspected": 0,
+      "hiddenFleet": false,
+      "isAlien": false,
+      "destination": null,
+      "currentPosX": "651.0",
+      "currentPosY": "999.0",
+      "currentPosZ": "1060.0"
+    },
+    {
+      "planetId": null,
+      "id": "5413",
+      "name": "Fl_1",
+      "state": "AtHome",
+      "onVacation": "0",
+      "mission": "NoMission",
+      "canBeSupplied": 0,
+      "canBeAttacked": 0,
+      "canBeInspected": 0,
+      "hiddenFleet": false,
+      "isAlien": false,
+      "destination": null,
+      "currentPosX": "639.0",
+      "currentPosY": "966.0",
+      "currentPosZ": "1071.0"
+    }
+  ]
+};
+
 var positions = [["PGC 58314","Sol-1","S-Ora1","275","730","203"],
 ["PGC 58314","Sol-11","S-Red1","848","558","988"],
 ["PGC 58314","Sol-12","S-Yel1","453","1002","608"],
@@ -671,13 +766,25 @@ function spacemap_tooltip(e){
   var click_data = click_ctx.getImageData(0,0,cc.width, cc.height);
   var planet_id_offset = offsetY*cc.width*4 + offsetX*4;
   var planet_id = click_data.data[planet_id_offset+2] + click_data.data[planet_id_offset+1] *256;
-
+  var fleet_id = click_data.data[planet_id_offset];
   var tooltip = document.getElementById("tooltip");
-  if(planet_id == 0) {
+  if(planet_id == 0 && fleet_id == 0) {
     tooltip.style.display = "none";
     return;
   }
-  tooltip.innerHTML = positions[planet_id].slice(0,3).join("<br>")+"<br>("+positions[planet_id].slice(3,6).join(" / ")+")<br>Distance: "+calc_dist(current,{x:positions[planet_id][3], y:positions[planet_id][4], z:positions[planet_id][5]})+" pc";
+  if(planet_id != 0) {
+    tooltip.innerHTML = positions[planet_id].slice(0,3).join("<br>")+"<br>("+positions[planet_id].slice(3,6).join(" / ")+")<br>Distance: "+calc_dist(current,{x:positions[planet_id][3], y:positions[planet_id][4], z:positions[planet_id][5]})+" pc";
+  }
+  if(fleet_id != 0) {
+    var index = fleet_index[fleet_id];
+
+    if(index > 0) {
+      var this_fleet = fleets[index-1];
+    } else {
+      var this_fleet = myfleets[-1*index-1];
+    }
+    tooltip.innerHTML = this_fleet.name+"<br>"+this_fleet.state+"/"+this_fleet.mission+"<br>("+this_fleet.currentPosX+"/"+this_fleet.currentPosY+"/"+this_fleet.currentPosZ+")";
+  }
   tooltip.style.display = "block";
   tooltip.style.top = e.pageY + "px";
   tooltip.style.left = e.pageX+20 + "px";
@@ -701,6 +808,9 @@ function spacemap_click(e){
   target.y = parseInt(positions[planet_id][4]);
   target.z = parseInt(positions[planet_id][5]);
 //   target.range = 200;
+  if(fleet_overlay_active) {
+    target.range -= 100;
+  }
  
   animate_transition_start();
   
@@ -932,6 +1042,10 @@ function redraw_from_values() {
 }
 
 function animate_transition_start() {
+
+  if(animation_blocked)
+    return;
+  fleet_overlay_active = false;
   check_values();
   animation_start = null;
     start.x = current.x;
@@ -989,8 +1103,9 @@ function draw() {
 }
 
 function check_values() {
-  if(target.range <=10)
-    target.range = 10;
+  target.range = Math.ceil(target.range / 50) * 50; // round to full 50
+  if(target.range <=50)
+    target.range = 50;
   if(target.range >=2000)
     target.range = 2000;
   if((target.angle > 360 && current.angle > 360) || (target.angle < -360 && current.angle < -360) ) {
@@ -1035,17 +1150,355 @@ function reset_view() {
   target.y = min.y+(max.y - min.y)/2;
   target.z = min.z+(max.z - min.z)/2;
   target.angle = 0;
-  console.log(target);
   animate_transition_start();
 }
 
 function fleet_scan(){
-  //TODO
-  alert("Scanner Malfunction! Error ID: 0x1337");
+  if(animation_running)
+    return;
+  if(fleet_overlay_active) {
+    animate_transition_start();
+    return;
+  }
+  if(current.range > 200) {
+    target.angle=0;
+    animate_transition_start();
+  }
+  fleet_scan_request_start();
+  animate_fleet_scan_start();
 }
+
+function animate_fleet_scan_start()
+{
+  fleet_overlay_active = true;
+  animation_blocked=true;
+  animation_running = true;
+  scan_animation_start = null;
+  scan_animation_stop = false;
+  scan_animation_duration = 600;
+  scan_animation_step = 0;
+  requestAnimationFrame(scan_grid);
+}
+
+function fleet_scan_request_start() {
+//Do some AJAX here
+
+//DUMMY CALLBACK
+scan_timeout = setTimeout(function(){scan_animation_stop = 1; 
+  if (fleets == undefined) { //pick some fleets somewhere
+    fleets = [];
+    myfleets = [];
+    for( i = 0; i < 90; i += 1) {
+      var r = Math.floor(Math.random()*positions.length);
+      fleets.push({
+      "planetId": null,
+      "id": i,
+      "name": "Flotte"+i,
+      "state": "AtHome",
+      "onVacation": "0",
+      "mission": "NoMission",
+      "canBeSupplied": 0,
+      "canBeAttacked": 0,
+      "canBeInspected": 0,
+      "hiddenFleet": false,
+      "isAlien": false,
+      "destination": null,
+      "currentPosX": positions[r][3],
+      "currentPosY": positions[r][4],
+      "currentPosZ": positions[r][5]
+      });
+    }
+    for( i = 0; i < 10; i += 1) {
+      var r = Math.floor(Math.random()*positions.length);
+      myfleets.push({
+      "planetId": null,
+      "id": i,
+      "name": "MeineFlotte"+i,
+      "state": "AtHome",
+      "onVacation": "0",
+      "mission": "NoMission",
+      "canBeSupplied": 0,
+      "canBeAttacked": 0,
+      "canBeInspected": 0,
+      "hiddenFleet": false,
+      "isAlien": false,
+      "destination": null,
+      "currentPosX": positions[r][3],
+      "currentPosY": positions[r][4],
+      "currentPosZ": positions[r][5]
+      });
+    }
+  }
+  fleet_sectors = [];
+  for(i = 0; i < sector_number*sector_number; i += 1) {
+    fleet_sectors.push({"my":0, "enemy":0});
+  }
+  var scale = current.range*2;
+
+  var min = { x : current.x - current.range,
+    y : current.y - current.range,
+    z : current.z - current.range,
+  }
+  for( i = 0; i < fleets.length; i += 1) {
+    var x = fleets[i].currentPosX;
+    var y = fleets[i].currentPosY;
+    var z = fleets[i].currentPosZ;
+  
+    var screen_x = 10+(x-min.x)*(610/scale);
+    var screen_y = 250+(y-min.y)*(240/scale);
+    var z_offset = (z-min.z)*(250/scale);
+    if(screen_x > 620 || screen_y > 490 || screen_y-z_offset > 490)
+      continue;
+    if(screen_x < 10 || screen_y < 250 || screen_y-z_offset < 10)
+      continue;
+    var x_sector = Math.floor((screen_x-10) / (610/sector_number));
+    var y_sector = Math.floor((screen_y-z_offset-10) / (480/sector_number));
+    fleet_sectors[x_sector + sector_number * y_sector].enemy += 1;
+  }
+  for( i = 0; i < myfleets.length; i += 1) {
+    var x = myfleets[i].currentPosX;
+    var y = myfleets[i].currentPosY;
+    var z = myfleets[i].currentPosZ;
+  
+    var screen_x = 10+(x-min.x)*(610/scale);
+    var screen_y = 250+(y-min.y)*(240/scale);
+    var z_offset = (z-min.z)*(250/scale);
+    if(screen_x > 620 || screen_y > 490 || screen_y-z_offset > 490)
+      continue;
+    if(screen_x < 10 || screen_y < 250 || screen_y-z_offset < 10)
+      continue;
+    var x_sector = Math.floor((screen_x-10) / (610/sector_number));
+    var y_sector = Math.floor((screen_y-z_offset-10) / (480/sector_number));
+    fleet_sectors[x_sector + sector_number * y_sector].my += 1;
+  }
+
+}, 2000);
+}
+
+function draw_scan_grid(progress) {
+  if(progress == undefined)
+    progress = 1;
+
+  ctx.strokeStyle="blue";
+  ctx.lineWidth = 2;
+  ctx.beginPath(); 
+  for(i=10; i < 500; i += 480/sector_number) {
+    ctx.moveTo(10, i);
+    ctx.lineTo(620*progress, i);
+  }
+  for(i=10; i < 630; i += 610/sector_number) {
+    ctx.moveTo(i, 10);
+    ctx.lineTo(i,490*progress);
+  }
+  ctx.stroke();
+}
+
+function scan_grid(time){
+  
+  if (scan_animation_start === null) scan_animation_start = time;
+  var i,animation_progress;
+  ctx.globalAlpha = 0.4;
+
+  draw();
+
+  ctx.globalAlpha = 0.4;
+
+  if(scan_animation_step == 0) {
+    animation_progress = (time-scan_animation_start) / scan_animation_duration;
+    if(animation_progress > 1)
+      animation_progress = 1;
+    if(animation_progress < 0)
+      animation_progress = 0;
+  } else {
+    animation_progress = 1;
+  }
+  //   console.log(animation_progress,time,scan_animation_start);
+
+  draw_scan_grid(animation_progress);
+
+  if(scan_animation_step == 1) {
+    ctx.fillStyle="blue";
+//     ctx.globalAlpha = 1;
+
+
+    ctx.globalAlpha = 0.5;
+    ctx.globalCompositeOperation="lighter";
+    ctx.fillRect(10+610/sector_number*scan_field.x,10+480/sector_number*scan_field.y,610/sector_number,480/sector_number);
+//     scan_field.x = easeInOutCubic(time-scan_animation_start, scan_field.dir == 1 ? 1 : 43, scan_field.dir == 1 ? 42 : -42 , scan_animation_duration);
+// 
+//     ctx.fillRect(10+610/48*scan_field.x,10,610/12,480);
+//     ctx.fillRect(10,10+480/48*scan_field.x,610,480/12);
+//     ctx.fillRect(570-610/48*scan_field.x,10,610/12,480);
+//     ctx.fillRect(10,440-480/48*scan_field.x,610,480/12);
+  }
+  ctx.globalCompositeOperation="source-over";
+
+  ctx.globalAlpha = 1;
+  ctx.strokeStyle="lime";
+  ctx.font="bold 40px Courier New ";
+  ctx.textAlign="center"; 
+  ctx.strokeText("...SCANNING...",315,260);
+  ctx.textAlign="start"; 
+
+  if(time-scan_animation_start < scan_animation_duration) {
+  } else {
+    switch(scan_animation_step) {
+      case 0: 
+        scan_animation_step = 1; 
+        scan_animation_start = null; 
+//         scan_animation_duration = 3000; 
+        scan_animation_duration = 100; 
+        scan_field = {x : Math.floor(Math.random()*sector_number), y: Math.floor(Math.random()*sector_number), dir: 1};
+      break;
+        case 1:
+        scan_animation_start = null; 
+        scan_field = {x : Math.floor(Math.random()*sector_number), y: Math.floor(Math.random()*sector_number), dir: 1};
+//         if(( scan_field.x == 5 && scan_field.dir == 1 ) || (scan_field.x == 0 && scan_field.dir == -1)) {
+//           scan_field.y += 1;
+//           if(scan_field.y == 6)
+//             scan_field.y = 0;
+//           scan_field.dir *= -1;
+//         } else {
+//           scan_field.x += scan_field.dir;
+//         }
+      break;
+    }
+  }
+
+  if(!scan_animation_stop) {
+    requestAnimationFrame(scan_grid);
+  } else {
+    ctx.globalAlpha = 0.4;
+    draw();
+    ctx.globalAlpha = 0.4;
+    draw_scan_grid();
+    ctx.globalAlpha = 1;
+    animation_blocked = false;
+    animation_running = false;
+    if(scan_animation_stop == -1) { //ABORT
+      draw();
+      clearTimeout(scan_timeout);
+      fleet_overlay_active = false;
+    } else if(scan_animation_stop == 1) { //SUCCESS
+      if (current.range > 200) {
+        draw_fleet_numbers();
+      } else {
+        draw_fleet_positions();
+      }
+    }
+    scan_animation_stop = false;
+
+  }
+
+}
+
+function draw_fleet_numbers() {
+  ctx.font="20px Courier New ";
+  ctx.textAlign="center"; 
+  for( i = 0; i < 36; i += 1) {
+    if(fleet_sectors[i].enemy > 0) {
+    ctx.lineWidth = 1;
+    ctx.strokeStyle="red";
+    ctx.strokeText(fleet_sectors[i].enemy,10+(i%sector_number)*(610/sector_number)+(610/sector_number/4),10+Math.floor(i/sector_number)*(480/sector_number)+(480/sector_number/4));
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.arc(10+(i%sector_number)*(610/sector_number)+(610/sector_number/4),10+Math.floor(i/sector_number)*(480/sector_number)+(480/sector_number/4)-6,18,0,2*Math.PI);
+    ctx.stroke();
+    }
+    if(fleet_sectors[i].my > 0) {
+    ctx.lineWidth = 1;
+    ctx.strokeStyle="#0f0";
+    ctx.strokeText(fleet_sectors[i].my,10+(i%sector_number)*(610/sector_number)+(610/sector_number/4*3),10+Math.floor(i/sector_number)*(480/sector_number)+(480/sector_number/4*3));
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.arc(10+(i%sector_number)*(610/sector_number)+(610/sector_number/4*3),10+Math.floor(i/sector_number)*(480/sector_number)+(480/sector_number/4*3)-6,18,0,2*Math.PI);
+    ctx.stroke();
+    }
+  }
+  ctx.textAlign="start"; 
+}
+
+function draw_fleet_positions() {
+  var scale = current.range*2;
+
+  var min = { x : current.x - current.range,
+    y : current.y - current.range,
+    z : current.z - current.range,
+  }
+
+  ctx.lineWidth = 2;
+  ctx.fillStyle = "red";
+  fleet_index = [0];
+  var index_number = 1;
+  for( i = 0; i < fleets.length; i += 1) {
+    var x = fleets[i].currentPosX;
+    var y = fleets[i].currentPosY;
+    var z = fleets[i].currentPosZ;
+    var angle = (current.angle % 360) / 180 * Math.PI;
+    // rotate around current position
+    //translate to origin, then rotate, then translate back;
+    x -= current.x;
+    y -= current.y;
+    var xnew = x * Math.cos(angle) - y * Math.sin(angle);
+    var ynew = y * Math.cos(angle) + x * Math.sin(angle);
+    x = xnew + current.x;
+    y = ynew + current.y;
+  
+    var screen_x = 10+(x-min.x)*(610/scale);
+    var screen_y = 250+(y-min.y)*(240/scale);
+    var z_offset = (z-min.z)*(250/scale);
+    if(screen_x > 620 || screen_y > 490 || screen_y-z_offset > 490)
+      continue;
+    if(screen_x < 10 || screen_y < 250 || screen_y-z_offset < 10)
+      continue;
+    ctx.fillRect(Math.floor(screen_x-10),Math.floor(screen_y-z_offset-10),6,6)
+    click_ctx.fillStyle = "#"+pad(index_number.toString(16),2,"0")+"0000";
+    fleet_index.push((i+1));
+    index_number += 1;
+    click_ctx.fillRect(Math.floor(screen_x-10),Math.floor(screen_y-z_offset-10),6,6)
+    
+
+  }
+  ctx.fillStyle = "#0f0";
+  for( i = 0; i < myfleets.length; i += 1) {
+    var x = myfleets[i].currentPosX;
+    var y = myfleets[i].currentPosY;
+    var z = myfleets[i].currentPosZ;
+    var angle = (current.angle % 360) / 180 * Math.PI;
+    // rotate around current position
+    //translate to origin, then rotate, then translate back;
+    x -= current.x;
+    y -= current.y;
+    var xnew = x * Math.cos(angle) - y * Math.sin(angle);
+    var ynew = y * Math.cos(angle) + x * Math.sin(angle);
+    x = xnew + current.x;
+    y = ynew + current.y;
+  
+    var screen_x = 10+(x-min.x)*(610/scale);
+    var screen_y = 250+(y-min.y)*(240/scale);
+    var z_offset = (z-min.z)*(250/scale);
+
+    if(screen_x > 620 || screen_y > 490 || screen_y-z_offset > 490)
+      continue;
+    if(screen_x < 10 || screen_y < 250 || screen_y-z_offset < 10)
+      continue;
+    ctx.fillRect(Math.floor(screen_x+10),Math.floor(screen_y-z_offset+10),6,6)
+    click_ctx.fillStyle = "#"+pad(index_number.toString(16),2,"0")+"0000";
+    fleet_index.push(-1*(i+1));
+    index_number += 1;
+    click_ctx.fillRect(Math.floor(screen_x+10),Math.floor(screen_y-z_offset+10),6,6)
+  }
+}
+
+function fleet_scan_abort() {
+  scan_animation_stop = -1;
+}
+
+var scan_animation_start, scan_animation_duration, scan_animation_step, scan_animation_stop = false, scan_field, scan_timeout, fleet_overlay_active = false;
 
 var animation_start;
 var animation_running;
+var animation_blocked=false;
 var animation_duration = 2000; //3 sec ?
 var draw_options = {planets_base: false};
 var target = {x:727,y:945,z:1032, range: 800, angle: 0};
