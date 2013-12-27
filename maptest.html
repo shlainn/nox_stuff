@@ -742,10 +742,10 @@ function draw_stuff(list, options) {
 
     //draw object
     ctx.globalCompositeOperation = "destination-out";
-    ctx.drawImage(spritesheet,sx,sy,50,50,Math.floor(screen_x-object_size),Math.floor(screen_y-y_offset-object_size),2*object_size, 2*object_size);
+    ctx.drawImage(spritesheet,sx,sy,50,50,screen_x-object_size,screen_y-y_offset-object_size,2*object_size, 2*object_size);
     ctx.globalCompositeOperation = "source-over";
     ctx.globalAlpha = object_alpha;
-    ctx.drawImage(spritesheet,sx,sy,50,50,Math.floor(screen_x-object_size),Math.floor(screen_y-y_offset-object_size),2*object_size, 2*object_size);
+    ctx.drawImage(spritesheet,sx,sy,50,50,screen_x-object_size,screen_y-y_offset-object_size,2*object_size, 2*object_size);
     ctx.globalAlpha = 1;    
 
     //and click target
