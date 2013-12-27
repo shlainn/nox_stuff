@@ -560,7 +560,7 @@ function spacemap_click(e){
   var offsetY = e.offsetY || e.pageY - e.originalTarget.offsetTop;
   var click_data = click_ctx.getImageData(0,0,cc.width, cc.height);
   var planet_id_offset = offsetY*cc.width*4 + offsetX*4;
-  var planet_id = click_data.data[planet_id_offset+2] + click_data.data[planet_id_offset+1] *256;
+  var planet_id = ((click_data.data[planet_id_offset+1] << 8) | click_data.data[planet_id_offset+2]) & 0xFFF;
 
   if(planet_id == 0) {
     return;
@@ -710,7 +710,7 @@ function draw_stuff(list, options) {
     var object_alpha = 0.2+ 0.8*((z - min.z)/scale);
 
     var object_size = current.range >= 200 ? draw_config[type].size_min : current.range <= 50 ? draw_config[type].size_max : draw_config[type].size_max-Math.floor( ((current.range-50)/150) * (draw_config[type].size_max-draw_config[type].size_min));
-    list[i].label = object_size.toString();
+
     var idx = types[list[i].type]+parseInt(list[i].subType)-1;
     var sx = (idx%5)*50;
     var sy = Math.floor(idx/5)*50;      
