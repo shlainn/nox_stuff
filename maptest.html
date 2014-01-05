@@ -16,19 +16,21 @@ Test einer alternativen Kartendarstellung<br>
 <b>Sichtweite</b></br> <input id="current_range" value=150><br>
 <b>Drehung</b></br> <input id="current_angle" value=0><br>
 <button onClick=redraw_from_values()>Neu zeichnen</button><br><br>
+<b>Flottenanzahl</b></br> <input id="current_fleets" value=200>
+<a href=# onclick="num_fleet_gen = document.getElementById('current_fleets').value; generate_fleets()" title="Flottenanzahl ändern" style="width:32px;height:32px;display:inline-block;background:url(icons.png) -244px -245px"></a>
+<br>
 <a href=# onclick="zoom_in()" style="width:32px;height:32px;display:inline-block;background:url(icons.png) -444px -45px"></a>
 <a href=# onclick="reset_view()" style="width:32px;height:32px;display:inline-block;background:url(icons.png) -484px -5px"></a>
 <a href=# onclick="zoom_out()" style="width:32px;height:32px;display:inline-block;background:url(icons.png) -484px -45px"></a><br>
 <a href=# onclick="rotate_left()" style="width:32px;height:32px;display:inline-block;background:url(icons.png) -324px -165px"></a>
-<a href=# onclick="fleet_scan()" title="Scan Starten" style="width:32px;height:32px;display:inline-block;background:url(icons.png) -244px -205px"></a>
+<a onclick="fleet_scan()" title="Flottenansicht an/aus" style="width:32px;height:32px;display:inline-block;background:url(icons.png) -244px -205px"></a>
 <a href=# onclick="rotate_right()" style="width:32px;height:32px;display:inline-block;background:url(icons.png) -364px -165px"></a><br>
-<a href=# onclick="draw_fleet_positions()" title="Flotten Anzeigen(DEBUG)" style="width:32px;height:32px;display:inline-block;background:url(icons.png) -244px -245px"></a>
-<a href=# onclick="draw_fleet_numbers_color()" title="Flotten Anzeigen(DEBUG)" style="width:32px;height:32px;display:inline-block;background:url(icons.png) -244px -245px"></a>
+<a href=# onclick="draw_config['S'].baseline_always = !draw_config['S'].baseline_always;draw_config['S'].baseline_close = !draw_config['S'].baseline_close;draw_config['P'].baseline_close = !draw_config['P'].baseline_close; draw();" title="Vertikale Striche an/aus" style="width:32px;height:32px;display:inline-block;background:url(icons.png) -244px -245px"></a>
 </div>
 
 
 <script>
-var sector_number = 3;
+var num_fleet_gen = 200;
 var fleets, myfleets, fleet_sectors, fleet_index;
 var xleets = {
   "myFleets": [
@@ -631,7 +633,7 @@ function draw_grid() {
   var gridbase_x = Math.floor(current.x/gridsize)*gridsize;
   var gridbase_z = Math.floor(current.z/gridsize)*gridsize;
   var num_grid = Math.ceil(current.range/gridsize)+1;
-  ctx.strokeStyle="#008";
+  ctx.strokeStyle="#00d";
 
   ctx.beginPath(); 
   for(i=-num_grid; i <= num_grid; i += 1) {
@@ -661,8 +663,8 @@ function draw_grid() {
   ctx.globalCompositeOperation = "destination-atop";
   ctx.translate(315,370);
   var grd=ctx.createRadialGradient(0,0,0,0,0,305);
-  grd.addColorStop(0,"#002");
-  grd.addColorStop(0.9,"#002");
+  grd.addColorStop(0,"#005");
+  grd.addColorStop(0.9,"#003");
   grd.addColorStop(1,"#000");
   ctx.fillStyle=grd;
   ctx.beginPath();
@@ -681,8 +683,8 @@ function pad(n, width, z) {
 }
 
 var draw_config = {
-  "S" : {"baseline_always": true, "baseline_close": true, "baseline_color": "lime", "label": "sName", "size_min": 8, "size_max": 20},
-  "H" : {"baseline_always": false, "baseline_close": false, "baseline_color": "#002", "label": false, "size_min": 4, "size_max": 8},
+  "S" : {"baseline_always": true, "baseline_close": true, "baseline_color": "#050", "label": "sName", "size_min": 8, "size_max": 20},
+  "H" : {"baseline_always": false, "baseline_close": false, "baseline_color": "#003", "label": false, "size_min": 4, "size_max": 8},
   "P" : {"baseline_always": false, "baseline_close": true, "baseline_color": "#020", "label": false, "size_min": 4, "size_max": 10},
 
 };
@@ -897,6 +899,12 @@ function draw() {
   click_ctx.clearRect(0,0,630,500);
   draw_grid();
   draw_stuff(positions, draw_options);
+  if(show_fleet_heatmap) {
+    if(current.range >= 200)
+      draw_fleet_numbers_color2();
+    else
+      draw_fleet_positions();
+  }
 }
 
 function check_values() {
@@ -951,6 +959,10 @@ function reset_view() {
 }
 
 function fleet_scan(){
+  if(show_fleet_heatmap) {
+    show_fleet_heatmap = false;
+    return;
+  }
   if(animation_running)
     return;
   if(fleet_overlay_active) {
@@ -972,7 +984,7 @@ function animate_fleet_scan_start()
   animation_running = true;
   scan_animation_start = null;
   scan_animation_stop = false;
-  scan_animation_duration = 600;
+  scan_animation_duration = 2000;
   scan_animation_step = 0;
   requestAnimationFrame(scan_grid);
 }
@@ -980,7 +992,7 @@ function animate_fleet_scan_start()
 function generate_fleets() {
     fleets = [];
     myfleets = [];
-    for( i = 0; i < 500; i += 1) {
+    for( i = 0; i < num_fleet_gen; i += 1) {
       var r = Math.floor(Math.random()*positions.length);
       fleets.push({
       "planetId": null,
@@ -1031,68 +1043,57 @@ scan_timeout = setTimeout(function(){scan_animation_stop = 1;
   if (fleets == undefined) { //pick some fleets somewhere
     generate_fleets();
   }
-  fleet_sectors = [];
-  for(i = 0; i < sector_number*sector_number; i += 1) {
-    fleet_sectors.push({"my":0, "enemy":0});
-  }
-  var scale = current.range*2;
-
-  var min = { x : current.x - current.range,
-    y : current.y - current.range,
-    z : current.z - current.range,
-  }
-  for( i = 0; i < fleets.length; i += 1) {
-    var x = fleets[i].currentPosX;
-    var y = fleets[i].currentPosY;
-    var z = fleets[i].currentPosZ;
-  
-    var screen_x = 10+(x-min.x)*(610/scale);
-    var screen_y = 250+(z-min.z)*(240/scale);
-    var y_offset = (y-min.y)*(250/scale);
-    if(screen_x > 620 || screen_y > 490 || screen_y-y_offset > 490)
-      continue;
-    if(screen_x < 10 || screen_y < 250 || screen_y-y_offset < 10)
-      continue;
-    var x_sector = Math.floor((screen_x-10) / (610/sector_number));
-    var y_sector = Math.floor((screen_y-y_offset-10) / (480/sector_number));
-    fleet_sectors[x_sector + sector_number * y_sector].enemy += 1;
-  }
-  for( i = 0; i < myfleets.length; i += 1) {
-    var x = myfleets[i].currentPosX;
-    var y = myfleets[i].currentPosY;
-    var z = myfleets[i].currentPosZ;
-  
-    var screen_x = 10+(x-min.x)*(610/scale);
-    var screen_y = 250+(z-min.z)*(240/scale);
-    var y_offset = (y-min.y)*(250/scale);
-    if(screen_x > 620 || screen_y > 490 || screen_y-y_offset > 490)
-      continue;
-    if(screen_x < 10 || screen_y < 250 || screen_y-y_offset < 10)
-      continue;
-    var x_sector = Math.floor((screen_x-10) / (610/sector_number));
-    var y_sector = Math.floor((screen_y-y_offset-10) / (480/sector_number));
-    fleet_sectors[x_sector + sector_number * y_sector].my += 1;
+  fleet_sectors = {};
+  for(var i = 0; i < fleets.length; i += 1) {
+    var xsec = Math.floor(fleets[i].currentPosX / 50)*50;
+    var ysec = Math.floor(fleets[i].currentPosY / 50)*50;
+    var zsec = Math.floor(fleets[i].currentPosZ / 50)*50;
+    var sector = xsec.toString()+"-"+ysec.toString()+"-"+zsec.toString();
+    if(fleet_sectors[sector] == undefined) {
+      fleet_sectors[sector] = 0;
+    }
+    fleet_sectors[sector] += 1;
   }
 
 }, 2000);
 }
 
-function draw_scan_grid(progress) {
-  if(progress == undefined)
-    progress = 1;
+// function draw_scan_grid(progress) {
+//   if(progress == undefined)
+//     progress = 1;
+// 
+//   ctx.strokeStyle="blue";
+//   ctx.lineWidth = 2;
+//   ctx.beginPath(); 
+//   for(i=10; i < 500; i += 480/sector_number) {
+//     ctx.moveTo(10, i);
+//     ctx.lineTo(620*progress, i);
+//   }
+//   for(i=10; i < 630; i += 610/sector_number) {
+//     ctx.moveTo(i, 10);
+//     ctx.lineTo(i,490*progress);
+//   }
+//   ctx.stroke();
+// }
 
-  ctx.strokeStyle="blue";
-  ctx.lineWidth = 2;
-  ctx.beginPath(); 
-  for(i=10; i < 500; i += 480/sector_number) {
-    ctx.moveTo(10, i);
-    ctx.lineTo(620*progress, i);
-  }
-  for(i=10; i < 630; i += 610/sector_number) {
-    ctx.moveTo(i, 10);
-    ctx.lineTo(i,490*progress);
-  }
-  ctx.stroke();
+function draw_scan_radar(progress) {
+  ctx.save();
+//   ctx.globalAlpha = 0.6;
+  var r = 315 * progress;
+  ctx.globalCompositeOperation = "lighter";
+  ctx.translate(315,250);
+  var grd=ctx.createRadialGradient(0,0,0,0,0,r);
+  grd.addColorStop(0,"rgba(0,0,0,0)");
+  grd.addColorStop(0.75,"rgba(0,0,0,0)");
+  grd.addColorStop(0.95,"rgba(0,255,0,1)");
+  grd.addColorStop(1,"rgba(0,0,0,0)");
+  ctx.fillStyle=grd;//"rgba(255,0,0,0.6)";  
+  ctx.beginPath();
+  ctx.scale(1,500/630);
+  ctx.arc(0,0,r,0,2*Math.PI);
+  ctx.fill();
+  ctx.restore()    
+      
 }
 
 function scan_grid(time){
@@ -1106,7 +1107,7 @@ function scan_grid(time){
   ctx.globalAlpha = 0.4;
 
   if(scan_animation_step == 0) {
-    animation_progress = (time-scan_animation_start) / scan_animation_duration;
+    animation_progress = ((time-scan_animation_start) / 1000)%1;
     if(animation_progress > 1)
       animation_progress = 1;
     if(animation_progress < 0)
@@ -1116,64 +1117,65 @@ function scan_grid(time){
   }
   //   console.log(animation_progress,time,scan_animation_start);
 
-  draw_scan_grid(animation_progress);
-
-  if(scan_animation_step == 1) {
-    ctx.fillStyle="blue";
-//     ctx.globalAlpha = 1;
-
-
-    ctx.globalAlpha = 0.5;
-    ctx.globalCompositeOperation="lighter";
-    ctx.fillRect(10+610/sector_number*scan_field.x,10+480/sector_number*scan_field.y,610/sector_number,480/sector_number);
-//     scan_field.x = easeInOutCubic(time-scan_animation_start, scan_field.dir == 1 ? 1 : 43, scan_field.dir == 1 ? 42 : -42 , scan_animation_duration);
+//   draw_scan_grid(animation_progress);
+  draw_scan_radar(animation_progress);
+//   draw_scan_radar(animation_progress/2);
+//   if(scan_animation_step == 1) {
+//     ctx.fillStyle="blue";
+// //     ctx.globalAlpha = 1;
 // 
-//     ctx.fillRect(10+610/48*scan_field.x,10,610/12,480);
-//     ctx.fillRect(10,10+480/48*scan_field.x,610,480/12);
-//     ctx.fillRect(570-610/48*scan_field.x,10,610/12,480);
-//     ctx.fillRect(10,440-480/48*scan_field.x,610,480/12);
-  }
-  ctx.globalCompositeOperation="source-over";
-
+// 
+//     ctx.globalAlpha = 0.5;
+//     ctx.globalCompositeOperation="lighter";
+//     ctx.fillRect(10+610/sector_number*scan_field.x,10+480/sector_number*scan_field.y,610/sector_number,480/sector_number);
+// //     scan_field.x = easeInOutCubic(time-scan_animation_start, scan_field.dir == 1 ? 1 : 43, scan_field.dir == 1 ? 42 : -42 , scan_animation_duration);
+// // 
+// //     ctx.fillRect(10+610/48*scan_field.x,10,610/12,480);
+// //     ctx.fillRect(10,10+480/48*scan_field.x,610,480/12);
+// //     ctx.fillRect(570-610/48*scan_field.x,10,610/12,480);
+// //     ctx.fillRect(10,440-480/48*scan_field.x,610,480/12);
+//   }
+//   ctx.globalCompositeOperation="source-over";
+// 
   ctx.globalAlpha = 1;
   ctx.strokeStyle="lime";
   ctx.font="bold 40px Courier New ";
   ctx.textAlign="center"; 
   ctx.strokeText("...SCANNING...",315,260);
   ctx.textAlign="start"; 
-
-  if(time-scan_animation_start < scan_animation_duration) {
-  } else {
-    switch(scan_animation_step) {
-      case 0: 
-        scan_animation_step = 1; 
-        scan_animation_start = null; 
-//         scan_animation_duration = 3000; 
-        scan_animation_duration = 100; 
-        scan_field = {x : Math.floor(Math.random()*sector_number), y: Math.floor(Math.random()*sector_number), dir: 1};
-      break;
-        case 1:
-        scan_animation_start = null; 
-        scan_field = {x : Math.floor(Math.random()*sector_number), y: Math.floor(Math.random()*sector_number), dir: 1};
-//         if(( scan_field.x == 5 && scan_field.dir == 1 ) || (scan_field.x == 0 && scan_field.dir == -1)) {
-//           scan_field.y += 1;
-//           if(scan_field.y == 6)
-//             scan_field.y = 0;
-//           scan_field.dir *= -1;
-//         } else {
-//           scan_field.x += scan_field.dir;
-//         }
-      break;
-    }
-  }
+// 
+//   if(time-scan_animation_start < scan_animation_duration) {
+//   } else {
+//     switch(scan_animation_step) {
+//       case 0: 
+//         scan_animation_step = 1; 
+//         scan_animation_start = null; 
+// //         scan_animation_duration = 3000; 
+//         scan_animation_duration = 100; 
+//         scan_field = {x : Math.floor(Math.random()*sector_number), y: Math.floor(Math.random()*sector_number), dir: 1};
+//       break;
+//         case 1:
+//         scan_animation_start = null; 
+//         scan_field = {x : Math.floor(Math.random()*sector_number), y: Math.floor(Math.random()*sector_number), dir: 1};
+// //         if(( scan_field.x == 5 && scan_field.dir == 1 ) || (scan_field.x == 0 && scan_field.dir == -1)) {
+// //           scan_field.y += 1;
+// //           if(scan_field.y == 6)
+// //             scan_field.y = 0;
+// //           scan_field.dir *= -1;
+// //         } else {
+// //           scan_field.x += scan_field.dir;
+// //         }
+//       break;
+//     }
+//   }
 
   if(!scan_animation_stop) {
     requestAnimationFrame(scan_grid);
   } else {
     ctx.globalAlpha = 0.4;
     draw();
-    ctx.globalAlpha = 0.4;
-    draw_scan_grid();
+//     ctx.globalAlpha = 0.4;
+//     draw_scan_grid();
     ctx.globalAlpha = 1;
     animation_blocked = false;
     animation_running = false;
@@ -1182,12 +1184,8 @@ function scan_grid(time){
       clearTimeout(scan_timeout);
       fleet_overlay_active = false;
     } else if(scan_animation_stop == 1) { //SUCCESS
-      if (current.range > 200) {
-        draw_fleet_numbers();
-        draw_fleet_numbers_color();
-      } else {
-        draw_fleet_positions();
-      }
+      show_fleet_heatmap = true;
+      draw();
     }
     scan_animation_stop = false;
 
@@ -1195,47 +1193,92 @@ function scan_grid(time){
 
 }
 
-function draw_fleet_numbers() {
-  ctx.font="20px Courier New ";
-  ctx.textAlign="center"; 
-  for( i = 0; i < sector_number*sector_number; i += 1) {
-    if(fleet_sectors[i].enemy > 0) {
-    ctx.lineWidth = 1;
-    ctx.strokeStyle="red";
-    ctx.strokeText(fleet_sectors[i].enemy,10+(i%sector_number)*(610/sector_number)+(610/sector_number/2),10+Math.floor(i/sector_number)*(480/sector_number)+(480/sector_number/2));
-//     ctx.lineWidth = 4;
-//     ctx.beginPath();
-//     ctx.arc(10+(i%sector_number)*(610/sector_number)+(610/sector_number/4),10+Math.floor(i/sector_number)*(480/sector_number)+(480/sector_number/4)-6,18,0,2*Math.PI);
-//     ctx.stroke();
-    }
-//     if(fleet_sectors[i].my > 0) {
+// function draw_fleet_numbers() {
+//   ctx.font="20px Courier New ";
+//   ctx.textAlign="center"; 
+//   for( i = 0; i < sector_number*sector_number; i += 1) {
+//     if(fleet_sectors[i].enemy > 0) {
 //     ctx.lineWidth = 1;
-//     ctx.strokeStyle="#0f0";
-//     ctx.strokeText(fleet_sectors[i].my,10+(i%sector_number)*(610/sector_number)+(610/sector_number/4*3),10+Math.floor(i/sector_number)*(480/sector_number)+(480/sector_number/4*3));
-//     ctx.lineWidth = 4;
-//     ctx.beginPath();
-//     ctx.arc(10+(i%sector_number)*(610/sector_number)+(610/sector_number/4*3),10+Math.floor(i/sector_number)*(480/sector_number)+(480/sector_number/4*3)-6,18,0,2*Math.PI);
-//     ctx.stroke();
+//     ctx.strokeStyle="red";
+//     ctx.strokeText(fleet_sectors[i].enemy,10+(i%sector_number)*(610/sector_number)+(610/sector_number/2),10+Math.floor(i/sector_number)*(480/sector_number)+(480/sector_number/2));
+// //     ctx.lineWidth = 4;
+// //     ctx.beginPath();
+// //     ctx.arc(10+(i%sector_number)*(610/sector_number)+(610/sector_number/4),10+Math.floor(i/sector_number)*(480/sector_number)+(480/sector_number/4)-6,18,0,2*Math.PI);
+// //     ctx.stroke();
 //     }
-  }
-  ctx.textAlign="start"; 
-}
-function draw_fleet_numbers_color() {
+// //     if(fleet_sectors[i].my > 0) {
+// //     ctx.lineWidth = 1;
+// //     ctx.strokeStyle="#0f0";
+// //     ctx.strokeText(fleet_sectors[i].my,10+(i%sector_number)*(610/sector_number)+(610/sector_number/4*3),10+Math.floor(i/sector_number)*(480/sector_number)+(480/sector_number/4*3));
+// //     ctx.lineWidth = 4;
+// //     ctx.beginPath();
+// //     ctx.arc(10+(i%sector_number)*(610/sector_number)+(610/sector_number/4*3),10+Math.floor(i/sector_number)*(480/sector_number)+(480/sector_number/4*3)-6,18,0,2*Math.PI);
+// //     ctx.stroke();
+// //     }
+//   }
+//   ctx.textAlign="start"; 
+// }
+// function draw_fleet_numbers_color() {
+//   
+//   max_in_sector=-1;
+//   for( i = 0; i < sector_number*sector_number; i += 1) {
+//     max_in_sector = Math.max(max_in_sector, fleet_sectors[i].enemy);
+//   }
+//   ctx.globalAlpha = 0.8;
+//   for( i = 0; i < sector_number*sector_number; i += 1) {
+//     if(fleet_sectors[i].enemy > 0) {
+//     ctx.fillStyle="rgb("+Math.floor(255*((fleet_sectors[i].enemy/max_in_sector)*0.6+0.4))+",0,0)";
+//     console.log(ctx.fillStyle);
+//     ctx.fillRect(10+610/sector_number*(i%sector_number),10+480/sector_number*Math.floor(i/sector_number),610/sector_number,480/sector_number);
+//     }
+//   }
+//   ctx.globalAlpha = 1;
+// }
+function draw_fleet_numbers_color2() {
   
-  max_in_sector=-1;
-  for( i = 0; i < sector_number*sector_number; i += 1) {
-    max_in_sector = Math.max(max_in_sector, fleet_sectors[i].enemy);
+  var max_in_sector=-1;
+  for( i in fleet_sectors) {
+    max_in_sector = Math.max(max_in_sector, fleet_sectors[i]);
   }
-  ctx.globalAlpha = 0.8;
-  for( i = 0; i < sector_number*sector_number; i += 1) {
-    if(fleet_sectors[i].enemy > 0) {
-    ctx.fillStyle="rgb("+Math.floor(255*((fleet_sectors[i].enemy/max_in_sector)*0.6+0.4))+",0,0)";
-    console.log(ctx.fillStyle);
-    ctx.fillRect(10+610/sector_number*(i%sector_number),10+480/sector_number*Math.floor(i/sector_number),610/sector_number,480/sector_number);
-    }
+  if(max_in_sector == -1) {
+    return;
   }
-  ctx.globalAlpha = 1;
+  
+  var scale = current.range*2;
+
+  var min = {
+    x : current.x - current.range, 
+    y : current.y - current.range,
+    z : current.z - current.range,
+  }  
+  
+  for( sector  in fleet_sectors ) {
+    var xyz = sector.split("-");
+    xyz = rotate_around_current({x:parseInt(xyz[0])+25,y:parseInt(xyz[1])+25,z:parseInt(xyz[2])+25});
+    //Position calculations
+    //magic numbers here are derived from canvas width and height, with a 10px padding
+    var screen_x = 10+(xyz.rot_x-min.x)*(610/scale);
+    var screen_y = 250+(xyz.rot_z-min.z)*(240/scale);
+    var y_offset = (xyz.rot_y-min.y)*(250/scale);
+        
+  ctx.save();
+//   ctx.globalAlpha = 0.6;
+  ctx.globalCompositeOperation = "lighter";
+  ctx.translate(screen_x,screen_y-y_offset);
+  var grd=ctx.createRadialGradient(0,0,0,0,0,75);
+  grd.addColorStop(0,"rgb(255,"+Math.floor((fleet_sectors[sector] / max_in_sector)*150)+",0)");
+  grd.addColorStop(1,"rgba(100,0,0,0)");
+  ctx.fillStyle=grd;//"rgba(255,0,0,0.6)";  
+  ctx.beginPath();
+  ctx.scale(1,0.397);
+  ctx.arc(0,0,75,0,2*Math.PI);
+  ctx.fill();
+  ctx.restore()    
+    
+  }
+  
 }
+
 function draw_fleet_positions() {
   var scale = current.range*2;
 
@@ -1265,9 +1308,9 @@ function draw_fleet_positions() {
     var screen_x = 10+(x-min.x)*(610/scale);
     var screen_y = 250+(z-min.z)*(240/scale);
     var y_offset = (y-min.y)*(250/scale);
-    if(screen_x > 620 || screen_y > 490 || screen_y-y_offset > 490)
+    if(screen_x > 620 || screen_y-y_offset > 490)
       continue;
-    if(screen_x < 10 || screen_y < 250 || screen_y-y_offset < 10)
+    if(screen_x < 10 || screen_y-y_offset < 10)
       continue;
     ctx.fillRect(Math.floor(screen_x),Math.floor(screen_y-y_offset),5,5)
     click_ctx.fillStyle = "#"+pad(index_number.toString(16),3,"0")+"000";
@@ -1317,7 +1360,7 @@ function init() {
   reset_view();
 }
 
-var scan_animation_start, scan_animation_duration, scan_animation_step, scan_animation_stop = false, scan_field, scan_timeout, fleet_overlay_active = false;
+var scan_animation_start, scan_animation_duration, scan_animation_step, scan_animation_stop = false, scan_field, scan_timeout, fleet_overlay_active = false, show_fleet_heatmap = false;
 
 var animation_start;
 var animation_running;
