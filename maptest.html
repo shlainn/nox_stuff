@@ -19,13 +19,16 @@ Test einer alternativen Kartendarstellung<br>
 <b>Flottenanzahl</b></br> <input id="current_fleets" value=200>
 <a href=# onclick="num_fleet_gen = document.getElementById('current_fleets').value; generate_fleets()" title="Flottenanzahl ändern" style="width:32px;height:32px;display:inline-block;background:url(icons.png) -244px -245px"></a>
 <br>
-<a href=# onclick="zoom_in()" style="width:32px;height:32px;display:inline-block;background:url(icons.png) -444px -45px"></a>
+<a href=# onclick="zoom(-50)" style="width:32px;height:32px;display:inline-block;background:url(icons.png) -444px -45px"></a>
 <a href=# onclick="reset_view()" style="width:32px;height:32px;display:inline-block;background:url(icons.png) -484px -5px"></a>
-<a href=# onclick="zoom_out()" style="width:32px;height:32px;display:inline-block;background:url(icons.png) -484px -45px"></a><br>
-<a href=# onclick="rotate_left()" style="width:32px;height:32px;display:inline-block;background:url(icons.png) -324px -165px"></a>
+<a href=# onclick="zoom(50)" style="width:32px;height:32px;display:inline-block;background:url(icons.png) -484px -45px"></a><br>
+<a href=# onclick="rotate(-60)" style="width:32px;height:32px;display:inline-block;background:url(icons.png) -324px -165px"></a>
 <a onclick="fleet_scan()" title="Flottenansicht an/aus" style="width:32px;height:32px;display:inline-block;background:url(icons.png) -244px -205px"></a>
-<a href=# onclick="rotate_right()" style="width:32px;height:32px;display:inline-block;background:url(icons.png) -364px -165px"></a><br>
-<a href=# onclick="draw_config['S'].baseline_always = !draw_config['S'].baseline_always;draw_config['S'].baseline_close = !draw_config['S'].baseline_close;draw_config['P'].baseline_close = !draw_config['P'].baseline_close; draw();" title="Vertikale Striche an/aus" style="width:32px;height:32px;display:inline-block;background:url(icons.png) -244px -245px"></a>
+<a href=# onclick="rotate(60)" style="width:32px;height:32px;display:inline-block;background:url(icons.png) -364px -165px"></a><br>
+<a href=# onclick="draw_config['S'].baseline_always = !draw_config['S'].baseline_always;draw_config['S'].baseline_close = !draw_config['S'].baseline_close;draw_config['P'].baseline_close = !draw_config['P'].baseline_close; draw();" title="Vertikale Striche an/aus" style="width:32px;height:32px;display:inline-block;background:url(icons.png) -244px -245px"></a><br>
+<a href=# onclick="move(-current.range/2,0,0)">links</a> <a href=# onclick="move(current.range/2,0,0)">rechts</a><br>
+<a href=# onclick="move(0,-current.range/2,0)">rauf</a> <a href=# onclick="move(0,current.range/2,0)">runter</a><br>
+<a href=# onclick="move(0,0,-current.range/2)">vor</a> <a href=# onclick="move(0,0,current.range/2)">zurück</a><br>
 </div>
 
 
@@ -920,22 +923,25 @@ function check_values() {
   
 }
 
-function zoom_in() {
-  target.range -= 50;
+function zoom(z) {
+  target.range += z;
   animate_transition_start();
 }
 
-function zoom_out() {
-  target.range += 50;
+
+function rotate(r) {
+  target.angle += r;
   animate_transition_start();
 }
 
-function rotate_left() {
-  target.angle -= 60;
-  animate_transition_start();
-}
-function rotate_right() {
-  target.angle += 60;
+function move(x,y,z) {
+  var angle = (current.angle % 360) / 180 * Math.PI;
+  var xnew = z * Math.sin(angle) - x * Math.cos(angle);
+  var znew = x * Math.sin(angle) + z * Math.cos(angle);
+
+  target.x += xnew;
+  target.y += y;
+  target.z += znew;
   animate_transition_start();
 }
 
