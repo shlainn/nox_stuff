@@ -1,0 +1,240 @@
+/* ----------------------------- Basic page structure ------------------------ */
+A.helpIndexLink:link {color: #909090;}
+A.helpIndexLink:active {color: #909090;}
+A.helpIndexLink:visited {color: #909090;}
+
+html { overflow: -moz-scrollbars-vertical; overflow-x: auto; overflow-y: scroll; }
+#gameBody
+{
+    margin: 0px auto; padding: 0px; width: 975px;
+    color: #A0A0A0; font-family: Arial,Helvetica,sans-serif; font-size: 90%;
+    background: #000000 no-repeat fixed 50% 100%;
+    overflow: -moz-scrollbars-none; overflow-x: hidden; overflow-y: hidden;
+    z-index: 0; position: relative;
+}
+
+#selectWorldBody
+{
+    margin: 0px auto; padding: 0px; width: 975px;
+    color: #A0A0A0; font-family: Arial,Helvetica,sans-serif; font-size: 90%;
+    background-color: #000000; background-image: url(../../pics/general/gameWorlds/background.jpg);
+    background-repeat: repeat; background-attachment: fixed;
+    overflow: -moz-scrollbars-none; overflow-x: hidden; overflow-y: hidden;
+    z-index: 0;
+}
+.pbar .ui-progressbar-value {display:block !important}
+.pbar {overflow: hidden; width: 380px; height: 12px !important; float: left; margin: 1px 3px; }
+.percent {position:relative;text-align: right; margin: 0px;}
+
+div#darkenPage { background-color: #000000; display: block; opacity: 0.8; z-index: 50; position: absolute; top: 0px; left: 0px; width: 100%; height: 3000px; }
+#windowBody { margin: 0px; padding: 0px; color: #A0A0A0; background-color: #000; font-family: Arial,Helvetica,sans-serif; font-size: 90%; overflow: -moz-scrollbars-none; overflow-x: hidden; overflow-y: hidden; }
+form { margin-bottom: 0px; }
+#site { padding: 0px; width: 100%; float: left; border: 0px solid green; }
+#topHeader { background-color: #000000; height: 68px; width: 955px; padding: 0px; margin: 0px; border: 1px #353545 solid; float: none; overflow: hidden; font-size: 85%; font-family: verdana, geneva, arial, helvetica, sans-serif; }
+.topHeaderLeft { width: 170px; margin: 2px; margin-top: 5px; padding: 3px; float:left; text-align: center; }
+.topHeaderRightArea { background-color: #000; height: 56px; margin: 3px; padding: 2px; float:right; text-align: center; }
+.topHeaderButtonArea { border: 0px solid #353545; width: 120px; margin-right: 6px; }
+.topHeaderUserArea { color: #A0A0A0; border: 0px solid #353545; background-color: transparent; height: 15px; margin: 1px; padding: 0px; float:right; text-align: center; width: 130px; overflow: hidden; }
+.topHeaderUserAreaContainer { background-color: transparent; width: 140px; padding: 0px; }
+.topHeaderRightSymbol { border: 1px solid #353545; background-color: #202035; height: 18px; margin: 1px; padding: 3px; float:right; text-align: center; }
+.topHeaderRightNox { background-color: transparent; height: 18px; margin: 2px; margin-top: 5px; padding: 3px; float:right; text-align: center; }
+.topHeaderLocationSelectionArea { background-color: #000; height: 54px; margin: 4px; padding: 2px; border: 1px solid #353545; overflow: hidden; text-align: center; float: left; }
+.questHeader { letter-spacing: 2px; font-size: 110%; color: lime}
+.questDescription { color: #A0A0A0}
+
+.clickable { cursor: pointer; }
+
+.buttonHighlighted
+{
+    -webkit-border-radius: 5px; -moz-border-radius: 5px; border-radius: 5px;
+
+    color: #AAAAAA; border: 1px solid #353540; background-color: #202035;
+    padding: 5px; padding-top: 1px; padding-bottom: 1px;
+    text-decoration: none; cursor: pointer;
+}
+.buttonHighlighted:hover { color:#fff; background-color: orange; padding: 5px; padding-top: 1px; padding-bottom: 1px; }
+
+.selectedColony { margin: 0px; width: 50px; height: 50px; border-style: none; }
+.unselectedColony { margin: 0px; margin-top: 15px;  width: 35px; height: 35px; border-style: none; }
+.attackedColonyAtter { border: 1px solid orange; background-color: #300000; padding: 1px;
+    -webkit-border-radius: 10px;
+    -moz-border-radius: 10px;
+    border-radius: 10px;}
+.attackedColonyVictim { border: 1px solid #AA2020; background-color: #300000; padding: 1px;
+    -webkit-border-radius: 10px;
+    -moz-border-radius: 10px;
+    border-radius: 10px;}
+.attackedColonyPiratesVictim { border: 1px solid #AA40AA; background-color: #300000; padding: 1px;
+    -webkit-border-radius: 10px;
+    -moz-border-radius: 10px;
+    border-radius: 10px;}
+
+#topHeaderTimeout { border: 1px solid #353545; background-color: #000; width: 90px; height: 56px; margin: 3px; padding: 2px; float:right; text-align: center; }
+#content { clear: none; width: 950px; margin: 0px auto; margin-bottom: 30px; overflow: hidden; font-size: 90%; font-weight: 500; color: #A0A0A0; font-family: verdana, geneva, arial, helvetica, sans-serif; text-align: center; background-color: transparent; }
+
+.mainLeft { float:left; width: 165px; overflow: hidden; padding: 0px; background-color: transparent; }
+.leftPanelContainer { border: 1px solid #353545; margin: 3px 0px 0px; padding: 0px; float: left; text-align: center; background-color: #151520;}
+.leftPanelHeader { width: 155px; font-size: 85%; padding-left: 8px; padding-bottom: 1px; margin-bottom: 2px; color: #BBBBCC; background-color: #353545; text-align: center; }
+.leftPanelItem { width: 160px; margin: 0px; padding: 1px 0px 1px 3px; float: left; clear: both; font-size: 75%; color: #AAAABB; background-color: #181825; text-align: left; }
+.paypalPanelContainer { margin: 3px; padding: 0px; clear: both; text-align: center; }
+
+#advertisingFrame { height: 180px; background-color: #202035; padding: 1px; padding-left: 10px; margin: 3px 12px 3px 8px; float: left; border: 1px solid #353545; border-top: none; text-align: center; display: inline-block; }
+.adsItem { margin: 1px; background-color: transparent; width: 180px; height: 22px; float: left; text-align:left; vertical-align: middle; font-size: 80%; }
+.adsItemAmazon
+{
+    margin: 2px; padding: 2px;
+    background-image: url(../../pics/general/gameBg/deactivateAdBlocker2Large.png); background-repeat: no-repeat; background-position: center;
+    width: 735px; height: 150px; float: left; text-align:left; vertical-align: middle;
+}
+
+.mainCenter { border: 0px solid blue; float:left; width: 780px; margin: 0px; height: auto; text-align: center; }
+#innerFrame { float: left; width: 760px; padding-left: 6px; background-color: transparent; margin-top: 5px; color: #cccccc; }
+#deadManCountdown { margin: 0px auto; margin-top: 13px; }
+.deadManTimeout { color: red; text-decoration: blink; }
+#CountDownDeadMan { margin: 0px auto; }
+.workloadContainer { background-color: #151520; padding: 1px; margin-top: 1px; margin-left: 2px; margin-right: 0px; float: left; border: 1px solid #353545; text-align: center; display: inline-block; }
+.workloadLabel { float: left; width: 265px; padding: 1px; background-color: transparent; }
+.workloadBar { float: left; width: 480px; padding: 2px; background-color: transparent; }
+.workloadBarProfi { float: left; width: 300px; padding: 2px; background-color: transparent; }
+
+/* --------------------- Menus (mainmenu, submenu, category) ---------------- */
+.mainMenuItemGraphic { margin: 5px 5px; padding: 0px; width: 152px; height: 230px; text-align: center;}
+.mainMenuPic { float: left; border: 0px; }
+
+.subMenuContainer { margin: 0px; margin-top: 2px; padding: 0px; float: left; border-top: 3px solid #252535; padding-left: 6px; clear: both; }
+.subMenuContainer ul { border-top: solid 0px #252535; border-right: solid 1px #252535; margin: 0px; margin-left: 2px; padding: 0px; font-family: verdana, geneva, arial, helvetica, sans-serif; }
+.subMenuContainer ul li
+{
+    -webkit-border-bottom-right-radius: 15px;
+    -moz-border-radius-bottomright: 15px;
+    border-bottom-right-radius: 15px;
+
+    width: 145px; list-style: none; margin: 0px; margin-left: 6px; padding: 0px;
+    font-size:100%; line-height: 180%; float: left;
+}
+
+.subMenuContainer ul li.selected { color:#edaa66; background:#252535; border: solid 3px #252535; border-top: 0px; margin-bottom: 2px; letter-spacing: 1px; }
+.subMenuContainer ul li a
+{
+    -webkit-border-bottom-right-radius: 15px;
+    -moz-border-radius-bottomright: 15px;
+    border-bottom-right-radius: 15px;
+
+    display:block; text-decoration:none; background-color: #252535; color: #AAAAAA;
+}
+.subMenuContainer ul li a:hover { padding: 0px; color:#fff; background-color: orange; }
+
+.categoryMenuContainer { background-color: transparent; opacity: 0.95; padding: 0px; padding-top: 10px; float: left; }
+.categories ul { margin: 0px; margin-left: 8px; padding: 0px; font-family: verdana, geneva, arial, helvetica, sans-serif; }
+.categories ul li
+{
+    -webkit-border-top-right-radius: 10px;
+    -moz-border-radius-topright: 10px;
+    border-top-right-radius: 10px;
+
+    background:#252535; width: auto; list-style: none; margin: 0px; margin-right: 3px; font-size:90%; line-height: 170%; float: left;
+}
+
+.categories ul li.selected { background-color: #252535; color:#edaa66; padding-left: 5px; padding-right: 8px; }
+.categories ul li a
+{
+    -webkit-border-top-right-radius: 10px;
+    -moz-border-radius-topright: 10px;
+    border-top-right-radius: 10px;
+    
+    display:block; text-decoration:none; padding-left: 5px; padding-right: 8px; background-color: #252535; color: #AAAAAA;
+}
+.categories ul li a:hover { color:#fff; background-color: orange; padding-left: 5px; padding-right: 8px; }
+
+.TheMap { float: left; padding: 4px; min-width: 630px;}
+.hidden { display: none; }
+
+.textLeft { text-align: left; }
+.textRight { text-align: right; }
+.textCenter { text-align: center; }
+.textJustify { text-align: justify; }
+.textMiddle { vertical-align: middle; }
+.transparent { background-color: transparent; }
+
+.statusOk { color: lime; }
+.statusWarning { color: orange; }
+.statusError { color: #FF8080; }
+.statusRedAlert { color: red; text-decoration: blink; }
+.fightAtter { background-color: #601010; }
+.fightVictim { background-color: #103510; }
+
+.enoughResources { color: lime; vertical-align: middle; }
+.nearlyEnoughResources { color: orange; vertical-align: middle; }
+.tooLessResources { color: #FF8080; vertical-align: middle; }
+.enoughResourcesFloatLeft { color: lime; vertical-align: middle; float: left; }
+.nearlyEnoughResourcesFloatLeft { color: orange; vertical-align: middle; float: left; }
+.tooLessResourcesFloatLeft { color: #FF8080; vertical-align: middle; float: left; }
+
+.alarm { color: orange; vertical-align: middle; }
+.energyAlarm { color: red; vertical-align: middle; text-decoration: blink; }
+
+.missingBuilding { padding: 8px; }
+.largeBuilding { padding: 8px; }
+.smallPadding { padding: 3px; }
+.padding15 { padding: 15px; }
+
+.resPic { border: 0px; vertical-align: middle; }
+.tableSettings { margin: 0px auto; padding: 15px; text-align: center; }
+
+p, ul, ol, li { font-size: 100%; font-weight: 500; line-height: 125%; color: #AAAABB; font-family: verdana, geneva, arial, helvetica, sans-serif }
+input, select, textarea { color: #AAAAAA; background-color: #151520; border: 2px solid #353540; }
+.formSmallerItem { font-size: 95%; }
+
+.galaxySelect { color: #AAAAAA; background-color: #151520; border: 2px solid #353540; margin-left: 2px; width: 180px; }
+.jumpSelect { color: #AAAAAA; background-color: #151520; border: 2px solid #353540; margin-left: 2px; width: 180px; }
+
+.normal { font-size: 100%; font-weight: 500; line-height: 125%; color: #202020; font-family: verdana, geneva, arial, helvetica, sans-serif }
+.header { font-size: 125%; font-weight: 800; letter-spacing: 2px; line-height: 150%; font-family: verdana, geneva, arial, helvetica, sans-serif }
+.small { font-size: 70%; font-weight: 400; }
+
+.playerExists { color: lime; vertical-align: middle; }
+.playerDoesNotExist { color: red; vertical-align: middle; }
+
+.maxWidth { width: 100%; }
+.breadCrumbContainer { height: 20px; }
+.breadCrumb { color: #AAAAAA; background-color: #151520; padding: 1px; margin: 2px; cursor: pointer; float: left; text-decoration: none; }
+.continueArea { float:right; margin: 8px; }
+.noborder { border-style: none; }
+.timeNeeded { font-size: 70%; color: transparent; }
+.colonyDescription { left: 0; bottom: 0; width: 173px; margin: 2px; margin-top: -12px; padding: 2px; display: block; position: relative; color: #ffffff; background-color: #202035; opacity: 0.6; float: left; }
+.colonyName { padding: 3px; }
+
+/* ----------------------------- Location selection ------------------------ */
+.locationForm { margin: 0px; padding: 0px; margin-left: 2px; }
+.locationSelect { font-size: 90%; color: #edaa66; background-color: #353540; border: 1px dotted #656570; float: left; margin-left: 2px; margin-bottom: 2px; width: 125px; }
+.locationShow { color: #edaa66; background-color: #151520; border: 0px solid #353540; float: left; margin: 1px; padding: 0px; padding-left: 4px; letter-spacing: 1px; }
+.locationImage { margin: 0px; margin-top: 1px; margin-left: 2px; padding: 0px; float: left; }
+
+/*--------------------------------- DNA Chunks --------------------------- */
+.InResearch { color: #80AA80; }
+.Unsolved { color: #AAAACC; }
+
+/*---------------------------------- Messages ---------------------------- */
+.messagesDetail { margin: 5px auto; padding: 2px; border: 0px solid #353545; }
+.captionMouseOver { color: #AAAAAA; background-color: #554535; }
+.AllianceMessage, .PlayerMessage { color: #AAAACC; }
+.DynamicTipMessage { color: #8080DD; }
+.EspionageMessage, .FleetMessage, .GeologyMessage, .ResearchMessage { color: #80AA80; }
+.FightReportDefenseMessageAtHome, .FightReportDefenseMessageOutwards, .FightReportAtter, .FightReportVictim { color: #EE8080; }
+.SystemMessage, .TradeMessage { color: red; }
+.TeamMessage { color: #FFFFFF; }
+
+/*---------------------------------- Tooltip ---------------------------- */
+.tooltip { position:absolute; z-index: 66666; color:#fff; font-size:10px; opacity: 1; border: 1px solid #353545; }
+.tipHeader { background-color:#202035; padding: 2px; }
+ 
+/* IE hack */
+*html .tipHeader {margin-bottom:-6px;}
+.tipBody { background-color:#181825; margin: 0px; padding: 0px; float: left; width: 100%; }
+.tipFleetInfoWidth { width: 360px; }
+.tipWeaponInfoWidth { width: 180px; }
+.tipRepairBuildingWidth { width: 110px; }
+.tipRepairShipWidth { width: 110px; }
+.tipFleetContainer { border: 1px solid #202035; margin: 1px; padding: 3px; float: left; width: 166px; }
+.tipFooter { background-color:#202035; height:2px; }
+

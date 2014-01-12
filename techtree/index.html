@@ -1,0 +1,517 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<link rel="stylesheet" href="../css/defaultSkin/common31.css" type="text/css" />
+<link rel="stylesheet" href="../css/defaultSkin/contentContainer28.css" type="text/css" />
+<link rel="stylesheet" href="../css/defaultSkin/resources9.css" type="text/css" />
+<link rel="SHORTCUT ICON" href="http://www.experinox.com/alien_16x16.ico" />
+    <title>eXperinox - Action-Multiplayer Browserspiel</title>
+    <meta name="keywords" content="spielportale, browsergames kostenlos ohne download, browser game kostenlos ohne download, online games, online spiele, online browsergames, browserspiele kostenlos, online spiele kostenlos, browser spiele strategie kostenlos, online spiele strategie kostenlos, kostenlos online spielen, online spiele multiplayer kostenlos, browsergames multiplayer kostenlos, browserspiele gratis, browsergame weltall, browserspiel weltall, browsergames kostenlos ohne download, free to play, free to play games, free2play games, free to play browsergames, free2play browsergames, free to play online games, free2play online games, free to play online spiele, free2play online spiele, area4fun, noxen, mmorpg" />
+    <meta name="description" content="eXperinox ist ein kostenloses Multiplayer Action-Browserspiel, Genre Weltall. Das komplexe Spieldesign hebt das Spiel von der Masse ab." />
+    <meta name="Author" content="team eXperinox" />
+    <meta name="copyright" content="Copyright 2008-2013 by eXperinox.com" />
+    <meta name="robots" content="noindex,nofollow" />
+    <meta name="format-detection" content="telephone=no" />    
+            
+        <script type="text/javascript" src="../js/jquery-1.9.1.min.js"></script><script type="text/javascript" src="../js/jquery-migrate-1.2.1.js"></script>
+        <script type="text/javascript">
+        $(function()
+        {
+            $('body').css({backgroundImage : 'url(../pics/defaultSkin/planets/Extentium_bg.png)'});
+        });
+        </script>
+        
+                <script src="../js/timeLeft.js" type="text/javascript"></script>                    <script src="../js/noXhelpers10.js" type="text/javascript"></script>
+                    </head>
+<body id="gameBody" style="background-image: url(../pics/defaultSkin/planets/Extentium_bg.png);">
+
+
+<div id="site">
+    <div id="topHeader" class="roundedBottomLeft roundedBottomRight">
+    <div  class="topHeaderLeft"><img src="../pics/defaultSkin/logo3.png" title="shlainn" width="170" height="50" alt="shlainn" /></div>
+    <div  class="topHeaderLocationSelectionArea roundedContainerSmall">
+            <a href="#"><img class="unselectedColony " alt="HomeBase" title="HomeBase" src="../pics/defaultSkin/planets/Homebase_Small.png" /></a>
+    <img class="selectedColony " alt="Planet" title="Planet" src="../pics/defaultSkin/planets/Extentium3_Small.png" />            </div>
+        <div class="topHeaderLocationSelectionArea roundedContainerSmall">
+            <a href="#"><img class="unselectedColony " alt="Planet" title="Planet" src="../pics/defaultSkin/planets/Extentium4_Small.png" /></a>
+    <a href="#"><img class="unselectedColony " alt="Planet" title="Planet" src="../pics/defaultSkin/planets/Extentium1_Small.png" /></a>
+    <a href="#"><img class="unselectedColony " alt="Planet" title="Planet" src="../pics/defaultSkin/planets/Jungle5_Small.png" /></a>
+    <a href="#"><img class="unselectedColony " alt="Planet" title="Planet" src="../pics/defaultSkin/planets/Water4_Small.png" /></a>
+    <a href="#"><img class="unselectedColony " alt="Planet" title="Planet" src="../pics/defaultSkin/planets/Extentium2_Small.png" /></a>
+            </div>
+            <div class="topHeaderLocationSelectionArea roundedContainerSmall">
+            <img class="unselectedColony" alt="Weitere Kolonien können gegründet werden!" title="Weitere Kolonien können gegründet werden!" src="../pics/defaultSkin/planets/PlanetPlaceholder.png" />
+    </div>
+                <div class="topHeaderRightArea roundedContainerSmall topHeaderButtonArea">
+        <div  class="topHeaderRightSymbol roundedContainerSmall clickable">
+            <img id="helpButton" src="../pics/defaultSkin/help.gif" width="20" height="20" title="Hilfe aufrufen" alt="Hilfe aufrufen" />
+        </div>
+        <div  class="topHeaderRightSymbol roundedContainerSmall clickable">
+            <img id="messageSignalButton" src="../pics/defaultSkin/messageRead.png" width="20" height="20" title="Nachrichtenstatus" alt="Nachrichtenstatus" />
+        </div>
+        <div class="topHeaderRightSymbol roundedContainerSmall clickable">
+            <img id="messageSignalUnionButton" src="../pics/defaultSkin/messageUnionRead.png" width="20" height="20" title="Unions-Nachricht" alt="Unions-Nachricht" />
+        </div>
+        <div class="topHeaderRightNox roundedContainerSmall">
+            &nbsp;987654&nbsp;<img class="resPicRight" src="../pics/defaultSkin/res/nox.png" title="noX - dein Kapital" alt="noX - dein Kapital" width="16" height="16" /> 
+        </div>
+    </div>
+    <div id="topHeaderTimeout" class="roundedContainerSmall">
+        <div id="deadManCountdown"><script type="text/javascript">
+TargetTimestamp = "1389485814";
+ServerTimestamp = "1389478614";
+CountActive = true;
+CountStepper = -1;
+LeadingZero = true;
+DisplayFormat = "%%H%%:%%M%%:%%S%%";
+FinishMessage = "~TIME OVER~";
+ElementId="CountDownDeadMan";
+</script>
+Auto-Logout in <script src="../js/countdown.js" type="text/javascript" ></script>
+</div>
+    </div>
+</div>
+
+<div id="content">
+<div class="mainLeft">
+    <div class="leftPanelContainer roundedContainer" >
+        <div class="leftPanelHeader roundedContainerTop">Kommandozentrale</div>
+        <div  class="mainMenuItemGraphic" style=text-align:left>
+        <input id="homeBase" type="checkBox" style="width:20px"> HomeBase<br>
+        <input id="commandBase" type="input" value=1 style="width:20px"> commandBase<br>
+        <input id="constructionHall" type="input" value=0 style="width:20px"> constructionHall<br>
+        <input id="farm" type="input" value=0 style="width:20px"> farm<br>
+        <input id="living" type="input" value=0 style="width:20px"> living<br>
+        <input id="spaceLift" type="input" value=0 style="width:20px"> spaceLift<br>
+        <input id="machineFactory" type="input" value=0 style="width:20px"> machineFactory<br>
+        <input id="spaceFactory" type="input" value=0 style="width:20px"> spaceFactory<br>
+	<button onClick=javascript:refreshTechTree();>Refresh TechTree</button>
+
+</div>    </div>
+
+    <div class="leftPanelContainer roundedContainer" >
+        <div class="leftPanelHeader roundedContainerTop">Spezialisten</div>
+<div id="specialists">
+    <div class="leftPanelItem">
+        <img class="resPic" src="../pics/defaultSkin/specialists/living.png" title="Lebensraum - Belegt/Gesamt" alt="Lebensraum - Belegt/Gesamt" width="20" height="20" />
+        <label title="Lebensraum - Belegt/Gesamt"><span >
+            <span id="livingUsed">123</span>/<span id="livingQuantity">999</span>
+                    </span></label>
+    </div>
+    <div class="leftPanelItem">&nbsp;</div>
+    <div class="leftPanelItem">
+        <img class="resPic" src="../pics/defaultSkin/specialists/resident.png" title="Einwohner - Im Einsatz/Gesamt (Alter/Pensionierung)" alt="Einwohner - Im Einsatz/Gesamt (Alter/Pensionierung)" width="20" height="20" />
+        <label title="Einwohner - Im Einsatz/Gesamt (Alter/Pensionierung)"><span >
+        <span id="residentsUsed">123</span>/<span id="residentsQuantity">999</span>
+        (&Oslash;18/&dagger;120)
+        </span></label>
+    </div>
+        <div class="leftPanelItem">
+        <img class="resPic" src="../pics/defaultSkin/specialists/architect.png" title="Architekt - Im Einsatz/Gesamt (Alter/Pensionierung)" alt="Architekt - Im Einsatz/Gesamt (Alter/Pensionierung)" width="20" height="20" />
+        <label title="Architekt - Im Einsatz/Gesamt (Alter/Pensionierung)"><span >
+        <span id="architectUsed">123</span>/<span id="architectQuantity">999</span>
+        (&Oslash;18/&dagger;120)</span></label>
+    </div>
+            <div class="leftPanelItem">
+        <img class="resPic" src="../pics/defaultSkin/specialists/designer.png" title="Konstrukteur - Im Einsatz/Gesamt (Alter/Pensionierung)" alt="Konstrukteur - Im Einsatz/Gesamt (Alter/Pensionierung)" width="20" height="20" />
+        <label title="Konstrukteur - Im Einsatz/Gesamt (Alter/Pensionierung)"><span >
+        <span id="designerUsed">123</span>/<span id="designerQuantity">999</span>
+        (&Oslash;18/&dagger;120)</span></label>
+    </div>
+            <div class="leftPanelItem">
+        <img class="resPic" src="../pics/defaultSkin/specialists/pilot.png" title="Pilot - Im Einsatz/Gesamt (Alter/Pensionierung)" alt="Pilot - Im Einsatz/Gesamt (Alter/Pensionierung)" width="20" height="20" />
+        <label title="Pilot - Im Einsatz/Gesamt (Alter/Pensionierung)"><span >
+        <span id="pilotUsed">123</span>/<span id="pilotQuantity">999</span>
+        (&Oslash;18/&dagger;120)</span></label>
+    </div>
+            <div class="leftPanelItem">
+        <img class="resPic" src="../pics/defaultSkin/specialists/weaponofficer.png" title="Waffenoffizier - Im Einsatz/Gesamt (Alter/Pensionierung)" alt="Waffenoffizier - Im Einsatz/Gesamt (Alter/Pensionierung)" width="20" height="20" />
+        <label title="Waffenoffizier - Im Einsatz/Gesamt (Alter/Pensionierung)"><span >
+        <span id="weaponOfficerUsed">123</span>/<span id="weaponOfficerQuantity">999</span>
+        (&Oslash;18/&dagger;120)</span></label>
+    </div>
+        </div>
+<br />
+        <!--span class="timeNeeded">63ms</span-->
+        <img src="../pics/defaultSkin/footerLeftBottom.gif" title="Have fun!" width="150" height="20" alt="Have fun!" />
+    </div>
+</div>
+
+<div class="mainCenter">
+<div class="resourceFrameTop roundedContainer" >
+   <div id="allResources">
+    <div class="resourceItem">
+        <img class="resPicLeft" src="../pics/defaultSkin/res/food.png" title="Nahrung" alt="Nahrung)" width="20" height="20" />
+        <span class="resourceValue">12345</span>
+    </div>
+    <div class="resourceItem">
+        <img class="resPicLeft" src="../pics/defaultSkin/res/energy.png" title="Energie" alt="Energie" width="20" height="20" />
+        <span class="resourceValue">12345</span>
+    </div>
+    <div  class="resourceItem">
+        <img class="resPicLeft" src="../pics/defaultSkin/res/hydrogen.png" title="Wasserstoff" alt="Wasserstoff" width="20" height="20" />
+        <span class="resourceValue">12345</span>
+    </div>
+    <div class="resourceItem">
+        <img class="resPicLeft" src="../pics/defaultSkin/res/helium.png" title="Helium 3 Plasma" alt="Helium 3 Plasma" width="20" height="20" />
+        <span class="resourceValue">12345</span>
+    </div>
+    <div  class="resourceItem">
+        <img class="resPicLeft" src="../pics/defaultSkin/res/wood.png" title="Holz" alt="Holz" width="20" height="20" />
+        <span class="resourceValue">12345</span>
+    </div>
+    <div class="resourceItem">
+        <img class="resPicLeft" src="../pics/defaultSkin/res/exoticWoods.png" title="Edelholz" alt="Edelholz" width="20" height="20" />
+        <span class="resourceValue">12345</span>
+    </div>
+    <div class="resourceItem">
+        <img class="resPicLeft" src="../pics/defaultSkin/res/carbon.png" title="Kohlenstoff" alt="Kohlenstoff" width="20" height="20" />
+        <span class="resourceValue">12345</span>
+    </div>
+    <div class="resourceItem">
+        <img class="resPicLeft" src="../pics/defaultSkin/res/cfk.png" title="CFK" alt="CFK" width="20" height="20" />
+        <span class="resourceValue">12345</span>
+    </div>
+    <div  class="resourceItem">
+        <img class="resPicLeft" src="../pics/defaultSkin/res/ore.png" title="Erz" alt="Erz" width="20" height="20" />
+        <span class="resourceValue">12345</span>
+    </div>
+    <div  class="resourceItem">
+        <img class="resPicLeft" src="../pics/defaultSkin/res/vanadium.png" title="Vanadium" alt="Vanadium" width="20" height="20" />
+        <span class="resourceValue">12345</span>
+    </div>
+    <div  class="resourceItem">
+        <img class="resPicLeft" src="../pics/defaultSkin/res/quartz.png" title="Quarzsand" alt="Quarzsand" width="20" height="20" />
+        <span class="resourceValue">12345</span>
+    </div>
+    <div class="resourceItem">
+        <img class="resPicLeft" src="../pics/defaultSkin/res/glass.png" title="Glas" alt="Glas" width="20" height="20" />
+        <span class="resourceValue">12345</span>
+    </div>
+    <div class="resourceItem">
+        <img class="resPicLeft" src="../pics/defaultSkin/res/silicium.png" title="Silizium" alt="Silizium" width="20" height="20" />
+        <span class="resourceValue">12345</span>
+    </div>
+        <div class="resourceItem">
+        <img class="resPicLeft" src="../pics/defaultSkin/res/pills.png" title="Nahrungspillen" alt="Nahrungspillen" width="20" height="20" />
+        <span class="resourceValue">12345</span>
+    </div>
+    <div class="resourceItem">
+        <img class="resPicLeft" src="../pics/defaultSkin/res/pillsPotexin.png" title="poteXin" alt="poteXin" width="20" height="20" />
+        <span class="resourceValue">12345</span>
+    </div>
+    <div class="resourceItem">
+        <img class="resPicLeft" src="../pics/defaultSkin/res/pillsRelaxin.png" title="relaXin" alt="relaXin" width="20" height="20" />
+        <span class="resourceValue">12345</span>
+    </div>
+    </div></div>
+<div class="subMenuContainer" >
+    <ul>
+    <li class="selected">Gebäude Boden
+        </li>
+        <li><a href="#">Raumschiffe Boden</a>
+        </li>
+        <li><a href="#">Gebäude Orbit</a>
+        </li>
+        <li><a href="#">Raumschiffe Orbit</a>
+        </li>
+    </ul></div>
+<div id="innerFrame"><script type="text/javascript">
+var BldFinishTimes = new Array();
+var BldIds= new Array();
+var BldFinishText = 'abgeschlossen';
+ReferenceTimestampServer = "1389478614";
+ReferenceTimestampClient = new Date();
+TimeOffset = ReferenceTimestampServer - ReferenceTimestampClient.getTime()/1000;
+timeLeftStart();
+</script>
+
+<div class="contentFrame">
+<div id="constructionHallInfo" class="workloadContainer roundedContainer maxContainerWidth">
+        <div class="workloadLabel">Auslastung der Konstruktionshalle</div>
+    <div class="workloadBar">
+        <img src="../pics/defaultSkin/stripe_red.gif" border="0" title="belegter Platz in der Konstruktionshalle" alt="belegter Platz in der Konstruktionshalle" width="0" height="8" /><img src="../pics/defaultSkin/stripe_green.gif" border="0" title="freier Platz in der Konstruktionshalle" alt="freier Platz in der Konstruktionshalle" width="370" height="8" />
+        &nbsp;(0/999)<br />
+    </div>
+            </div>
+<br />
+
+<div  class="categoryMenuContainer">
+    <div class="categories">
+        <ul>
+                                <li><a href="#">Infrastruktur</a>
+                                </li>
+                            <li><a href="#">Leben</a>
+                                </li>
+                            <li><a href="#">Ressourcen</a>
+                                </li>
+                            <li><a href="#">Wissen</a>
+                                </li>
+                            <li><a href="#">Raumfahrt</a>
+                                </li>
+                            <li class="selected">Tech-Tree
+                                </li>
+                            </ul>
+    </div>
+</div><div class="constructionContentContainer roundedContainer maxContainerWidth">
+
+<div id="tooltip_defenseComplex" class="tooltip hidden" style="top: 84px; left: 260.5px; text-align:left">
+    <div class="tipHeader">Geb&auml;udeinfo</div>
+    <div class="tipBody">
+	<div class="tipFleetContainer roundedContainer">
+	<b>Verteidigungkomplex</b><br /><br />
+	Kommandozentrale Stufe 25<br />
+	Raumlift Stufe 5<br />
+	</div>
+    </div>
+    <div class="tipFooter"></div>
+</div>
+<div id="tooltip_secuBubble" class="tooltip hidden" style="top: 84px; left: 260.5px; text-align:left">
+    <div class="tipHeader">Geb&auml;udeinfo</div>
+    <div class="tipBody">
+	<div class="tipFleetContainer roundedContainer">
+	<b>Secu-Bubble</b><br /><br />
+	Kommandozentrale Stufe 50<br />
+	Raumlift Stufe 5<br />
+	Raumfabrik Stufe 1<br />
+	</div>
+    </div>
+    <div class="tipFooter"></div>
+</div>
+<div class="contentContainer roundedContainer largeContainerWidth" style="position:relative;height:500px;background-image:url(../pics/defaultSkin/planets/Extentium_bg.png);background-size: 300%;background-repeat:no-repeat;background-position: 50% 100%;">
+<canvas id="techTreeCanvas" style="width:750px; height: 500px; position:absolute;top:0; left:0" width=750 height=500></canvas>
+
+<a rel="tooltip" id="a_tooltip_recreationPark"><img src="../pics/defaultSkin/buildings/recreationParkLarge.png" style="position: absolute; top:   10px; left: 330px; height: 60px" /></a>
+
+<a rel="tooltip" name="notHB" id="a_tooltip_defenseComplex"><img src="../pics/defaultSkin/buildings/defenseComplexLarge.png" style="position: absolute; top:  80px; left: 330px; height: 60px" /></a>
+<a rel="tooltip" name="notHB" id="a_tooltip_secuBubble"><img src="../pics/defaultSkin/buildings/secuBubbleLarge.png" style="position: absolute; top:  80px; left: 440px; height: 60px" /></a>
+
+
+<a rel="tooltip" id="a_tooltip_humanizer"><img src="../pics/defaultSkin/buildings/humanizerLarge.png" style="position: absolute; top: 150px; left: 220px; height: 60px" /></a>
+<a rel="tooltip" name="notHB" id="a_tooltip_infraredTelescope"><img src="../pics/defaultSkin/buildings/infraredTelescopeLarge.png" style="position: absolute; top: 150px; left: 330px; height: 60px" /></a>
+<a rel="tooltip" id="a_tooltip_spaceFactory"><img src="../pics/defaultSkin/buildings/spaceFactoryLarge.png" style="position: absolute; top: 150px; left: 440px; height: 60px" /></a>
+<a rel="tooltip" name="onlyHB" id="a_tooltip_singularityEmitter"><img src="../pics/defaultSkin/buildings/singularityEmitterLarge.png" style="position: absolute; top: 150px; left: 550px; height: 60px" /></a>
+
+
+<a rel="tooltip" id="a_tooltip_commandBase"><img src="../pics/defaultSkin/buildings/commandBaseLarge.png"  style="position: absolute; top: 250px; left:  10px; height: 60px" /></a>
+<a rel="tooltip" id="a_tooltip_constructionHall"><img src="../pics/defaultSkin/buildings/constructionHallLarge.png" style="position: absolute; top: 250px; left: 330px; height: 60px" /></a>
+
+<a rel="tooltip" id="a_tooltip_spaceLift"><img src="../pics/defaultSkin/buildings/spaceLiftLarge.png" style="position: absolute; top: 250px; left: 550px; height: 60px" /></a>
+
+
+<a rel="tooltip" id="a_tooltip_energyCenter"><img src="../pics/defaultSkin/buildings/energyCenterLarge.png" style="position: absolute; top: 350px; left: 110px; height: 60px" /></a>
+<a rel="tooltip" id="a_tooltip_woqHarvester"><img src="../pics/defaultSkin/buildings/woqHarvesterLarge.png" style="position: absolute; top: 350px; left: 220px; height: 60px" /></a>
+<a rel="tooltip" name="notHB" id="a_tooltip_artificialTree"><img src="../pics/defaultSkin/buildings/artificialTreeLarge.png" style="position: absolute; top: 350px; left: 330px; height: 60px" /></a>
+<a rel="tooltip" id="a_tooltip_competenceCenter"><img src="../pics/defaultSkin/buildings/competenceCenterLarge.png" style="position: absolute; top: 350px; left: 440px; height: 60px" /></a>
+<a rel="tooltip" name="onlyHB" id="a_tooltip_researchCenter"><img src="../pics/defaultSkin/buildings/researchCenterLarge.png" style="position: absolute; top: 350px; left: 550px; height: 60px" /></a>
+<a rel="tooltip" id="a_tooltip_tradingOffice"><img src="../pics/defaultSkin/buildings/tradingOfficeLarge.png" style="position: absolute; top: 350px; left: 660px; height: 60px" /></a>
+
+<a rel="tooltip" id="a_tooltip_farm"><img src="../pics/defaultSkin/buildings/farmLarge.png"         style="position: absolute; top: 420px; left: 110px; height: 60px" /></a>
+<a rel="tooltip" id="a_tooltip_processingComplex"><img src="../pics/defaultSkin/buildings/processingComplexLarge.png" style="position: absolute; top: 420px; left: 220px; height: 60px" /></a>
+<a rel="tooltip" id="a_tooltip_machineFactory"><img src="../pics/defaultSkin/buildings/machineFactoryLarge.png" style="position: absolute; top: 420px; left: 330px; height: 60px" /></a>
+<a rel="tooltip" name="notHB" id="a_tooltip_hangar"><img src="../pics/defaultSkin/buildings/hangarLarge.png" style="position: absolute; top: 420px; left: 440px; height: 60px" /></a>
+<a rel="tooltip" id="a_tooltip_pillFactory"><img src="../pics/defaultSkin/buildings/pillFactoryLarge.png"  style="position: absolute; top: 420px; left: 550px; height: 60px" /></a>
+<a rel="tooltip" id="a_tooltip_living"><img src="../pics/defaultSkin/buildings/livingLarge.png" style="position: absolute; top: 420px; left: 660px; height: 60px" /></a>
+
+</div>
+
+<script>
+
+function refreshTechTree() {
+  drawTechTreeBuildings(document.getElementById("homeBase").checked,
+			document.getElementById("commandBase").value,
+			document.getElementById("constructionHall").value,
+			document.getElementById("farm").value,
+			document.getElementById("living").value,
+			document.getElementById("spaceLift").value,
+			document.getElementById("machineFactory").value,
+			document.getElementById("spaceFactory").value
+			);
+
+}
+
+
+function drawArrow(c) {
+  ctx.fillStyle = ctx.strokeStyle;
+  ctx.beginPath();
+  ctx.moveTo(c[0],c[1]);
+  for(var i = 2; i < c.length; i += 2) {
+    ctx.lineTo(c[i],c[i+1]);
+  }
+  ctx.stroke();
+  ctx.beginPath();
+  var l = c.length;
+  //Arrow head - last stroke must be horizontal or vertical
+  if(c[l-2] == c[l-4]) { // x1 == x2 - vertical
+    if(c[l-1] > c[l-3]) { // y2 > y1 - down
+      ctx.lineTo(c[l-2]-5, c[l-1]-8);
+      ctx.lineTo(c[l-2]+5, c[l-1]-8);
+      ctx.lineTo(c[l-2],c[l-1]);
+    } else {
+      ctx.lineTo(c[l-2]-5, c[l-1]+8);
+      ctx.lineTo(c[l-2]+5, c[l-1]+8);
+      ctx.lineTo(c[l-2],c[l-1]);
+    }
+  } else { // horizontal arrow
+    if(c[l-2] > c[l-4]) { // x2 > x1 - right
+      ctx.lineTo(c[l-2]-8, c[l-1]+5);
+      ctx.lineTo(c[l-2]-8, c[l-1]-5);
+      ctx.lineTo(c[l-2],c[l-1]);
+    } else {
+      ctx.lineTo(c[l-2]+8, c[l-1]+5);
+      ctx.lineTo(c[l-2]+8, c[l-1]-5);
+      ctx.lineTo(c[l-2],c[l-1]);
+    }    
+  }
+  ctx.fill();
+}
+
+var ctx = document.getElementById("techTreeCanvas").getContext("2d");
+
+ctx.lineWidth = 2;
+
+refreshTechTree();
+
+function drawTechTreeBuildings(homeBase, commandBase, constructionHall, farm, living, spaceLift, machineFactory, spaceFactory) {
+ctx.clearRect(0,0,750, 500);
+
+var fillStyleBaseGreen = "#0f0";
+var fillStyleBaseRed = "#f00";
+var fillStyleOtherGreen = "#0a0";
+var fillStyleOtherRed = "#a00";
+
+var notHB = document.getElementsByName("notHB");
+for(var i = 0; i < notHB.length; i += 1) {
+  console.log(notHB[i]);
+  notHB[i].style.display = homeBase ? "none" : "block";
+}
+
+var onlyHB = document.getElementsByName("onlyHB");
+for(var i = 0; i < onlyHB.length; i += 1) {
+  onlyHB[i].style.display = homeBase ? "block" : "none";
+}
+
+//commandBase
+
+//Level100
+ctx.strokeStyle = (commandBase == 100) ? fillStyleBaseGreen : fillStyleBaseRed;
+
+if(homeBase) {
+  drawArrow([50,280,95,280,95,220,538,220,538,180,550,180]); //singularityEmitter
+}
+//Level50
+ctx.strokeStyle = (commandBase >= 50) ? fillStyleBaseGreen : fillStyleBaseRed;
+drawArrow([50,280,95,280,95,220,428,220,428,185,440,185]); //spaceFactory
+
+//Level25
+ctx.strokeStyle = (commandBase >= 25) ? fillStyleBaseGreen : fillStyleBaseRed;
+if(!homeBase) {
+  drawArrow([50,280,95,280,95,220,313,220,313,175,330,175]); //infraredTelescope
+  drawArrow([50,280,95,280,95,220,313,220,313,110,330,110]); //defenseComplex
+}
+drawArrow([50,280,95,280,95,220,313,220,313, 40,330, 40]); //recreationPark
+//Level20
+ctx.strokeStyle = (commandBase >= 20) ? fillStyleBaseGreen : fillStyleBaseRed;
+drawArrow([50,280,95,280,95,330,645,330,645,380,660,380]); //tradingOffice
+drawArrow([50,280,95,280,95,330,645,330,645,445,660,445]); //living
+
+//Level10
+ctx.strokeStyle = (commandBase >= 10) ? fillStyleBaseGreen : fillStyleBaseRed;
+drawArrow([50,280,95,280,95,330,535,330,535,285,550,285]); //spaceLift
+if(homeBase) {
+  drawArrow([50,280,95,280,95,330,535,330,535,380,550,380]); //researchCenter
+}
+//Level10 space
+drawArrow([50,280,95,280,95,220,205,220,205,180,220,180]); //humanizer
+
+
+//Level8
+ctx.strokeStyle = (commandBase >= 8) ? fillStyleBaseGreen : fillStyleBaseRed;
+drawArrow([50,280,95,280,95,330,425,330,425,380,440,380]); //competenceCenter
+
+//Level5
+ctx.strokeStyle = (commandBase >= 5) ? fillStyleBaseGreen : fillStyleBaseRed;
+drawArrow([50,280,95,280,95,330,315,330,315,280,330,280]); //constructionHall
+if(!homeBase) {
+  drawArrow([50,280,95,280,95,330,315,330,315,380,330,380]); //artificialTree
+}
+drawArrow([50,280,95,280,95,330,315,330,315,450,330,450]); //machineFactory
+
+//Level3
+ctx.strokeStyle = (commandBase >= 3) ? fillStyleBaseGreen : fillStyleBaseRed;
+drawArrow([50,280,95,280,95,330,205,330,205,380,220,380]); //woqHarvester
+drawArrow([50,280,95,280,95,330,205,330,205,450,220,450]); //processingComplex
+
+//Level2
+ctx.strokeStyle = (commandBase >= 2) ? fillStyleBaseGreen : fillStyleBaseRed;
+drawArrow([50,280,95,280,                95,380,110,380]); //energyCenter
+drawArrow([50,280,95,280,                95,450,110,450]); //farm
+
+
+
+
+//machineFactory
+ctx.strokeStyle = (machineFactory > 0) ? fillStyleOtherGreen : fillStyleOtherRed;
+if(!homeBase) {
+  drawArrow([370,450,440,450]); //hangar
+}
+
+//farm
+ctx.strokeStyle = (farm >= 35) ? fillStyleOtherGreen : fillStyleOtherRed;
+drawArrow([150,450,150,495,535,495,535,450,550,450]); //pillFactory
+ctx.strokeStyle = (farm >= 20) ? fillStyleOtherGreen : fillStyleOtherRed;
+drawArrow([150,450,150,495,645,495,645,455,660,455]); //living
+
+//constructionHall
+ctx.strokeStyle = (constructionHall >= 5) ? fillStyleOtherGreen : fillStyleOtherRed;
+drawArrow([370,275,550,275]); //spaceLift
+
+//spaceFactory
+ctx.strokeStyle = (spaceFactory > 0) ? fillStyleOtherGreen : fillStyleOtherRed;
+if(!homeBase) {
+  drawArrow([480,180,480,139]); //secuBubble
+}
+
+//living
+ctx.strokeStyle = (living >= 10) ? fillStyleOtherGreen : fillStyleOtherRed;
+drawArrow([680,450,745,450,745,35,410,35]); //recreationPark
+
+//spaceLift
+//Level50
+ctx.strokeStyle = (spaceLift == 50) ? fillStyleOtherGreen : fillStyleOtherRed;
+if(homeBase) {
+  drawArrow([575,280,575,245,280,245,280,230,645,230,645,180,630,180]); //singularityEmitterLarge
+}
+
+//Level7
+ctx.strokeStyle = (spaceLift >= 7) ? fillStyleOtherGreen : fillStyleOtherRed;
+drawArrow([575,280,575,245,280,245,280,230,533,230,533,45,410,45]); //recreationPark
+
+//Level5
+ctx.strokeStyle = (spaceLift >= 5) ? fillStyleOtherGreen : fillStyleOtherRed;
+if(!homeBase) {
+  drawArrow([575,280,575,245,280,245,280,230,423,230,423,110,410,110]); //defenseComplex
+}
+drawArrow([575,280,575,245,280,245,280,230,423,230,423,175,440,175]); //spaceFactory
+
+//Level1
+ctx.strokeStyle = (spaceLift >= 1) ? fillStyleOtherGreen : fillStyleOtherRed;
+drawArrow([575,280,575,245,280,245,280,230,318,230,318,185,300,185]); //humanizer
+if(!homeBase) {
+  drawArrow([575,280,575,245,280,245,280,230,318,230,318,185,330,185]); //infraredTelescope
+}
+
+}
+
+
+
+</script>
+
+
+</div>
+</div>
+
+</div> </div> </div> </div> <div id="darkenPage" style="display: none">&nbsp;</div>
+
+</body>
+</html>

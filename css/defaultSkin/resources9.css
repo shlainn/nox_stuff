@@ -1,0 +1,112 @@
+.resourceFrameTop { background-color: #151520; padding: 2px 1px 1px 14px; margin-top: 3px; margin-left: 8px; margin-right: 6px; float: left; border: 1px solid #353545; text-align: center; display: inline-block; }
+.resourceContainerHeader
+{
+    -webkit-border-top-left-radius: 8px;
+    -webkit-border-top-right-radius: 8px;
+    -moz-border-radius-topleft: 8px;
+    -moz-border-radius-topright: 8px;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+
+    padding: 2px; margin: 0px; color: #BBBBCC; background-color: #202035; opacity: 0.9; clear: both; width: 283px;
+}
+
+.resourceHeader
+{
+    -webkit-border-top-left-radius: 8px;
+    -webkit-border-top-right-radius: 8px;
+    -moz-border-radius-topleft: 8px;
+    -moz-border-radius-topright: 8px;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+
+    font-size: 85%; padding-left: 8px; padding-right: 8px; padding-top: 2px; color: #BBBBCC; background-color: #353545; text-align: left;
+}
+
+.resourceContainerControlArea { background-color: transparent; padding: 1px; padding-bottom: 0px; margin: 0px; display: block; font-size: 90%; width: 284px; height: 23px; float: left; }
+.resourceContainerInfoArea { background-color: #252535; opacity: 0.7; margin: 0px; padding: 0px; border: 1px solid #353545; display: block; width: 462px; height: 20px; float: left; }
+
+.caHeader
+{
+    -webkit-border-top-left-radius: 18px;
+    -webkit-border-top-right-radius: 18px;
+    -moz-border-radius-topleft: 18px;
+    -moz-border-radius-topright: 18px;
+    border-top-left-radius: 18px;
+    border-top-right-radius: 18px;
+
+    border: 1px solid #202035; border-bottom: 0px; color: #BBBBCC; background-color: #202035; margin: 0px; padding: 2px; width: 280px; height: 16px;
+}
+
+.buttonControlArea
+{
+    -webkit-border-radius: 18px;
+    -moz-border-radius: 18px;
+    border-radius: 18px;
+
+    color: #AAAAAA; margin: 7px; margin-top: 3px; margin-bottom: 0px; padding: 0px; cursor: pointer; text-decoration: none;
+}
+
+.blink { text-decoration: blink; }
+
+.caAdjust { border: 1px solid #454565; border-bottom: 0px; padding-left: 8px; padding-right: 8px; margin-top: 1px; color: #AAAAAA; background-color: #000040; float: left; height: 21px; }
+.caIsOn { border: 1px solid #008000; border-bottom: 0px; margin-top: 1px; width: 65px; height: 21px; color: #00E000; background-color: #002000; float: left; }
+.caIsOff { border: 1px solid #602020; border-bottom: 0px; margin-top: 1px; width: 65px; height: 21px; color: #FF2020; background-color: #400000; float: left; }
+.caOn { border: 1px solid #456545; border-bottom: 0px; margin-top: 1px; width: 65px; height: 21px; color: #505050; background-color: #002000; float: left; }
+.caOff { border: 1px solid #654545; border-bottom: 0px; margin-top: 1px; width: 65px; height: 21px; color: #505050; background-color: #200000; float: left; }
+
+.resourceLoadInput { width: 70px; border: 0px hidden; background-color: #101010; padding: 0px; margin: 0px; text-align: right; }
+.resourceItem { margin: 0px; border: 1px solid transparent; background-color: transparent; width: 91px; height: 22px; float: left; text-align:left; vertical-align: middle; font-size: 80%; }
+.resourceItemProfi { margin: 1px; margin-left: 2px; background-color: transparent; width: 88px; height: 22px; float: left; text-align:left; vertical-align: middle; font-size: 80%; }
+.resourceItemPic { margin: 0px; margin-left: 3px; width: 25px; float: left; text-align:left; vertical-align: middle; font-size: 80%; }
+.resourceItemProfiLarge { margin: 0px; width: 130px; height: 20px; float: left; text-align:left; vertical-align: middle; font-size: 80%; }
+.resourceValue { padding: 2px; float: left; }
+
+table.resourceProcessingMachine { margin: 0px; padding: 0px; border-collapse: separate; border-spacing: 0px; border: 1px solid #353545; }
+table.resourceProcessingMachine caption {
+    -webkit-border-top-left-radius: 8px;
+    -webkit-border-top-right-radius: 8px;
+    -moz-border-radius-topleft: 8px;
+    -moz-border-radius-topright: 8px;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+
+    color: #AAAAAA; background-color: #353545; border-top: 1px solid #353545; border-left: 1px solid #353545; border-right: 1px solid #353545;
+    vertical-align: middle; font-size: 100%; font-weight: 500; margin-bottom: 0px; padding-right: 5px;
+}
+
+table.resourceProcessingMachine th { background-color: #000000; color: #AAAAAA; opacity: 0.8; border: 1px solid #353545; font-weight: 500; }
+table.resourceProcessingMachine td { margin: 0px; padding: 0px; vertical-align: middle; }
+table.resourceProcessingMachine input { float: left; width: 30px; height: 12px; padding: 1px; margin-bottom: 3px; }
+table.resourceProcessingMachine input:focus { border: 2px dotted green; padding: 1px; }
+
+.resourceMachineArea { background-color: #000000; }
+.resLimit { margin-left: 15px; margin-top: 5px; }
+
+.resPicRight { border: 0px; float: right; }
+.resPicLeft { border: 0px; float: left; }
+
+.resName { color: #edaa66; clear: both; }
+.resPercentage { margin: 3px; color: #808080; font-size: 80%; float: left; }
+.numRef { border: 0px; }
+
+.resInfo { color: #edaa66; font-size: 80%; clear: both; }
+
+.resRateMinus { color: #A06060; font-size: 80%; padding-left: 15px; clear: both; }
+.resRatePlus { color: #509050; font-size: 80%; clear: both; }
+.resDescription { margin: 0px; padding: 0px; text-align: center; vertical-align: middle; height: 62px; width: 125px; float: left; }
+.resPlaceHolder { margin: 0px; padding: 0px; text-align: left; width: 49px; height: 62px; float: left; }
+.resArrowCenter { margin: 0px; padding: 0px; text-align: left; width: 76px; height: 62px; float: left; }
+.resSettings { margin: 3px; margin-bottom: 1px; height: 22px; }
+.resArrow { margin: 0px; padding: 0px; text-align: left; width: 26px; height: 62px; float: right; }
+
+div.resArrow img { float: left; }
+td.naviCell img { float: left; }
+
+.resourceCell { width: 153px; background-color: #252535; opacity: 0.8; margin: 0px; padding: 0px; border: 1px solid #353545; }
+.naviCell { width: 153px; background-color: #252535; opacity: 0.6; margin: 0px; padding: 0px; border: 1px solid #252535; }
+.descriptionCell { padding: 8px; }
+.manpowerCell { width: 460px; height: 60px; background-color: #000000; opacity: 0.7; margin: 0px; padding: 0px; border: 1px solid #353545; }
+
+table.manpowerMachine, table.researchMachine { margin: 0px; padding: 0px; border-collapse: collapse; border: 1px solid #353545; background-color: #000000; opacity: 0.9; }
+
