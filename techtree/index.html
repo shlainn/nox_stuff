@@ -480,25 +480,25 @@ drawArrow([680,450,745,450,745,35,410,35]); //recreationPark
 //Level50
 ctx.strokeStyle = (spaceLift == 50) ? fillStyleOtherGreen : fillStyleOtherRed;
 if(homeBase) {
-  drawArrow([575,280,575,245,280,245,280,230,645,230,645,180,630,180]); //singularityEmitterLarge
+  drawArrow([575,280,575,245,645,245,645,230,645,180,630,180]); //singularityEmitterLarge
 }
 
 //Level7
 ctx.strokeStyle = (spaceLift >= 7) ? fillStyleOtherGreen : fillStyleOtherRed;
-drawArrow([575,280,575,245,280,245,280,230,533,230,533,45,410,45]); //recreationPark
+drawArrow([575,280,575,245,533,245,533,230,533,45,410,45]); //recreationPark
 
 //Level5
 ctx.strokeStyle = (spaceLift >= 5) ? fillStyleOtherGreen : fillStyleOtherRed;
 if(!homeBase) {
-  drawArrow([575,280,575,245,280,245,280,230,423,230,423,110,410,110]); //defenseComplex
+  drawArrow([575,280,575,245,423,245,423,230,423,110,410,110]); //defenseComplex
 }
-drawArrow([575,280,575,245,280,245,280,230,423,230,423,175,440,175]); //spaceFactory
+drawArrow([575,280,575,245,423,245,423,230,423,175,440,175]); //spaceFactory
 
 //Level1
 ctx.strokeStyle = (spaceLift >= 1) ? fillStyleOtherGreen : fillStyleOtherRed;
-drawArrow([575,280,575,245,280,245,280,230,318,230,318,185,300,185]); //humanizer
+drawArrow([575,280,575,245,318,245,318,230,318,185,300,185]); //humanizer
 if(!homeBase) {
-  drawArrow([575,280,575,245,280,245,280,230,318,230,318,185,330,185]); //infraredTelescope
+  drawArrow([575,280,575,245,318,245,318,230,318,185,330,185]); //infraredTelescope
 }
 
 }
