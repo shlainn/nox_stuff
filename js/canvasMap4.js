@@ -445,7 +445,7 @@ $(document).ready(function()
         ctx.font="14px Georgia";
         for(i = 0; i < textboxes.length; i += 1)
         {
-            ctx.globalAlpha = 0.7;
+            ctx.globalAlpha = 0.2;
             ctx.fillStyle="#999";
             ctx.fillRect(textboxes[i][1],textboxes[i][2]-13,ctx.measureText(textboxes[i][0]).width+4,18);
             ctx.globalAlpha = 1;
