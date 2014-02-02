@@ -47,10 +47,10 @@ $(document).ready(function()
       "F" : {"baseline_always": false, "baseline_close": false, "baseline_color": "#020", "label": false, "size_min": 6, "size_max": 8}
     };
     var fleet_draw_config = {
-      "myFleets" : {"subType":3,"imgoffs":48},
-      "unionFleets" : {"subType":1,"imgoffs":0},
-      "alienFleets" : {"subType":2,"imgoffs":24,"gradient_start1": "rgba(0,", "gradient_factor": 180, "gradient_start2":",180,0.7)"},
-      "foreignFleets":{"subType":4,"imgoffs":72,"gradient_start1": "rgba(180,", "gradient_factor": 180, "gradient_start2":",0,0.7)"},
+      "myFleets" : {"subType":3},
+      "unionFleets" : {"subType":1},
+      "alienFleets" : {"subType":2,"gradient_start1": "rgba(0,", "gradient_factor": 180, "gradient_start2":",180,0.7)"},
+      "foreignFleets":{"subType":4,"gradient_start1": "rgba(180,", "gradient_factor": 180, "gradient_start2":",0,0.7)"},
     };
     
     // Space Part type map onto spritesheet
