@@ -3,9 +3,11 @@ $(document).ready(function()
     $("#mapTabs ul").idTabs();
     
     $("#canvasMapArea").click(function(event) { canvasmap_click(event); });
-    $("#canvasMapArea").mousemove(function(event) { canvasmap_tooltip(event); });
+    $("#canvasMapArea").mousemove(function(event) { canvasmap_move(event); });
     $("#canvasMapArea").mouseover(function() { canvasmap_tooltip_start(); });
-    $("#canvasMapArea").mouseout(function() { canvasmap_tooltip_stop(); });
+    $("#canvasMapArea").mouseout(function() { canvasmap_tooltip_stop(); canvasmap_drag_stop();});
+    $("#canvasMapArea").mousedown(function() {canvasmap_drag_start(event);});
+    $("#canvasMapArea").mouseup(function() {canvasmap_drag_stop();});
     
     $("#resetView").click(function() { reset_view(); });
     $("#zoomIn").click(function() { zoom(-50); });
@@ -103,13 +105,13 @@ $(document).ready(function()
         });
     }
     
-    function getHeatmap(fleetId, x, y, z, rangeOfSight)
+    function getHeatmap(fleetId)
     {
         $.ajax(
         {
             type: "POST",
             url: "mil_canvasMap_getHeatmap.php",
-            data: "fleetId=" + fleetId + "&x=" + x + "&y=" + y + "&z=" + z + "&mapRangeOfSight=" + rangeOfSight,
+            data: "fleetId=" + fleetId,
             async: true,
             success: function(dataArray)
             {
@@ -173,7 +175,23 @@ $(document).ready(function()
     var cc=document.getElementById("canvasMapArea_click");
     var click_ctx=cc.getContext("2d");
 
-    // click_ctx = ctx; //DEBUG
+    var map_drag = false;
+    var map_drag_position;
+    function canvasmap_drag_start(e) {
+      map_drag = true;
+      if (!e)
+        e = window.event;
+      var parentOffset = $("#canvasMapArea").offset();
+      map_drag_position = {
+        offsetX : Math.floor(e.pageX - parentOffset.left),
+        offsetY : Math.floor(e.pageY - parentOffset.top) 
+      };
+    }
+
+    function canvasmap_drag_stop() {
+      map_drag = false;
+    }
+
     var tooltip_active=false;
 
     function canvasmap_tooltip_start() {
@@ -188,17 +206,40 @@ $(document).ready(function()
       return Math.sqrt(Math.pow(source.x - target.x , 2) + Math.pow(source.y - target.y , 2) + Math.pow(source.z - target.z , 2)).toFixed(3);
     }
 
-    function canvasmap_tooltip(e)
+    function canvasmap_move(e)
     {
-      if(!tooltip_active)
+      if(!tooltip_active && !map_drag)
         return;
 
       if (!e)
         e = window.event;
-      
       var parentOffset = $("#canvasMapArea").offset();
       var offsetX = Math.floor(e.pageX - parentOffset.left);
       var offsetY = Math.floor(e.pageY - parentOffset.top);
+
+      var scale = current.range*2;
+
+      var min = {
+          x : current.x - current.range,
+          y : current.y - current.range,
+          z : current.z - current.range
+      };
+      var angle = (current.angle % 360) / 180 * Math.PI;
+
+      //drag
+      if(map_drag) {
+        var deltaX = offsetX - map_drag_position.offsetX;
+        var deltaY = map_drag_position.offsetY - offsetY;
+        deltaX2 = deltaY * Math.sin(angle) - deltaX * Math.cos(angle);
+        deltaY2 = deltaX * Math.sin(angle) + deltaY * Math.cos(angle);
+        current.x += (deltaX2/canvas.width ) * scale;
+        current.z += (deltaY2/canvas.height ) * scale;
+        draw();
+        map_drag_position.offsetX = offsetX;
+        map_drag_position.offsetY = offsetY;
+        return;
+      }
+      //Tooltip
 
       var click_data = click_ctx.getImageData(offsetX,offsetY,1, 1);
       var planet_id =(((click_data.data[1] << 8) | click_data.data[2]) & 0xFFF) -1;
@@ -228,13 +269,7 @@ $(document).ready(function()
         tooltip.html(tooltip_html.join("<hr>"));
       }
       var temp =rotate_around_current(positions[planet_id]);
-      var scale = current.range*2;
 
-      var min = {
-          x : current.x - current.range,
-          y : current.y - current.range,
-          z : current.z - current.range
-      };
       var screen_x = canvas.padding+(temp.rot_x-min.x)*((canvas.width-2*canvas.padding)/scale);
       var screen_y = (canvas.height / 2)+(temp.rot_z-min.z)*((canvas.height / 2 - canvas.padding)/scale);
       var y_offset = (temp.rot_y-min.y)*((canvas.height / 2)/scale);
@@ -678,7 +713,7 @@ $(document).ready(function()
         //Do some AJAX here
         if (current.range >= 200) {
             if(fleet_sectors === undefined) {
-              getHeatmap(fleetId, current.x, current.y, current.z, current.range);
+              getHeatmap(fleetId);
             } else {
               scan_animation_stop = 1;
             }
