@@ -229,7 +229,7 @@ $(document).ready(function()
       //drag
       if(map_drag) {
         var deltaX = offsetX - map_drag_position.offsetX;
-        var deltaY = map_drag_position.offsetY - offsetY;
+        var deltaY = (map_drag_position.offsetY - offsetY)*2;
         deltaX2 = deltaY * Math.sin(angle) - deltaX * Math.cos(angle);
         deltaY2 = deltaX * Math.sin(angle) + deltaY * Math.cos(angle);
         current.x += (deltaX2/canvas.width ) * scale;
