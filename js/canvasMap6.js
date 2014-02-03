@@ -156,16 +156,14 @@ $(document).ready(function()
     
     // requestAnim shim layer by Erik Möller
     // thanks to http://my.opera.com/emoller/blog/2011/12/20/requestanimationframe-for-smart-er-animating
-    window.requestAnimationFrame = (function() {
     var lastTime = 0;
     var vendors = ['ms', 'moz', 'webkit', 'o'];
     for(var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
         window.requestAnimationFrame = window[vendors[x]+'RequestAnimationFrame'];
-        window.cancelRequestAnimationFrame = window[vendors[x]+
-          'CancelRequestAnimationFrame'];
+        window.cancelRequestAnimationFrame = window[vendors[x]+'CancelRequestAnimationFrame'];
     }
 
-    if (!window.requestAnimationFrame)
+    if (!window.requestAnimationFrame) {
         window.requestAnimationFrame = function(callback, element) {
             var currTime = new Date().getTime();
             var timeToCall = Math.max(0, 16 - (currTime - lastTime));
@@ -174,12 +172,13 @@ $(document).ready(function()
             lastTime = currTime + timeToCall;
             return id;
         };
+    }
 
-    if (!window.cancelAnimationFrame)
+    if (!window.cancelAnimationFrame) {
         window.cancelAnimationFrame = function(id) {
             clearTimeout(id);
         };
-    }())
+    }
 
     var map_drag = false;
     var map_drag_position;
