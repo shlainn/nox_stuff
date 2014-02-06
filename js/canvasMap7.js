@@ -33,7 +33,7 @@ $(document).ready(function()
     var animation_progress_previous = 0;
     var show_fleet_overlay = false;
 
-    var positions, fleets = [], fleet_sectors, fleet_index;
+    var positions, fleets = [], fleet_sectors, fleet_index, selected_object = null;
     var animation_start;
     var animation_running;
     var animation_blocked=false;
@@ -44,7 +44,7 @@ $(document).ready(function()
       "S" : {"baseline_always": true, "baseline_close": true, "baseline_color": "#050", "label": "sName", "size_min": 8, "size_max": 20},
       "H" : {"baseline_always": false, "baseline_close": false, "baseline_color": "#003", "label": false, "size_min": 4, "size_max": 8},
       "P" : {"baseline_always": false, "baseline_close": true, "baseline_color": "#020", "label": false, "size_min": 4, "size_max": 10},
-      "F" : {"baseline_always": false, "baseline_close": false, "baseline_color": "#020", "label": false, "size_min": 6, "size_max": 8}
+      "F" : {"baseline_always": false, "baseline_close": false, "baseline_color": "#020", "label": false, "size_min": 4, "size_max": 6}
     };
 
     var fleet_draw_config = {
@@ -181,10 +181,11 @@ $(document).ready(function()
         };
     }
 
-    var map_drag = false;
+    var map_drag = false, map_drag_prevent_click = false;
     var map_drag_position;
     function canvasmap_drag_start(e) {
       map_drag = true;
+      setTimeout(function(){map_drag_prevent_click = true;},200);
       if (!e)
         e = window.event;
       var parentOffset = $("#canvasMapArea").offset();
@@ -196,6 +197,10 @@ $(document).ready(function()
 
     function canvasmap_drag_stop() {
       map_drag = false;
+      setTimeout(function(){map_drag_prevent_click = false;},200);
+      if(show_fleet_overlay && current.range <= 200) {
+        getVisibleFleets(fleetId, current.x, current.y, current.z, current.range);
+      }      
     }
 
     var tooltip_active=false;
@@ -262,22 +267,22 @@ $(document).ready(function()
       {
         var distance = calc_dist({x:fleetX, y:fleetY, z:fleetZ},{x:positions[planet_id].x, y:positions[planet_id].y, z:positions[planet_id].z});
         var dist_current = calc_dist(current,{x:positions[planet_id].x, y:positions[planet_id].y, z:positions[planet_id].z});
-        var tipText = positions[planet_id].label+"<br />"+positions[planet_id].posLabel+"<br />"+"Distance: "+distance+" pc<br />To current:"+dist_current;
-        var sendText = $("#sendText").text();
-        var sendId = positions[planet_id].partId;
-        switch(positions[planet_id].spacePart)
-        {
-            case "P":
-                tipText += "<a class='helpIndexLink' href='mil_sendFleetToPlanet.php?id="+sendId+"'>";
-                break;
-            case "H":
-                tipText += "<a class='helpIndexLink' href='mil_sendFleetToHomebase.php?id="+sendId+"'>";
-                break;
-            case "S":
-                tipText += "<a class='helpIndexLink' href='mil_sendFleetToStar.php?id="+sendId+"'>";
-                break;
-        }
-        tipText += sendText+"</a>";
+        var tipText = positions[planet_id].label+"<br />"+positions[planet_id].posLabel+"<br />"+"Distance: "+distance+" pc<br />To current:"+dist_current+"<br />";
+//         var sendText = $("#sendText").text();
+//         var sendId = positions[planet_id].partId;
+//         switch(positions[planet_id].spacePart)
+//         {
+//             case "P":
+//                 tipText += "<a class='helpIndexLink' href='mil_sendFleetToPlanet.php?id="+sendId+"'>";
+//                 break;
+//             case "H":
+//                 tipText += "<a class='helpIndexLink' href='mil_sendFleetToHomebase.php?id="+sendId+"'>";
+//                 break;
+//             case "S":
+//                 tipText += "<a class='helpIndexLink' href='mil_sendFleetToStar.php?id="+sendId+"'>";
+//                 break;
+//         }
+//         tipText += sendText+"</a>";
         tooltip.html(tipText);
       }
       if(fleet_id != -1)
@@ -298,11 +303,12 @@ $(document).ready(function()
       var screen_y = (canvas.height / 2)+(temp.rot_z-min.z)*((canvas.height / 2 - canvas.padding)/scale);
       var y_offset = (temp.rot_y-min.y)*((canvas.height / 2)/scale);
       tooltip.css("display", "block");
-      tooltip.offset({"top": parseInt(parentOffset.top+screen_y-y_offset)+3,"left": parseInt(parentOffset.left)+screen_x+3});
+      tooltip.offset({"top": parseInt(parentOffset.top+screen_y-y_offset)+3,"left": parseInt(parentOffset.left)+screen_x+15});
     }
-
     function canvasmap_click(e)
     {
+      if(map_drag_prevent_click)
+        return;
       if (!e)
         e = window.event;
 
@@ -312,19 +318,83 @@ $(document).ready(function()
 
       var click_data = click_ctx.getImageData(offsetX,offsetY,1, 1);
       var planet_id =(((click_data.data[1] << 8) | click_data.data[2]) & 0xFFF) -1;
+      var fleet_id = ((click_data.data[0]<< 4) | (click_data.data[1] >> 4)) -1 ;
 
-      if(planet_id == -1) {
+      if(planet_id == -1 && fleet_id == -1){
+        update_selection(null);
         return;
       }
-      target.x = parseInt(positions[planet_id].x);
-      target.y = parseInt(positions[planet_id].y);
-      target.z = parseInt(positions[planet_id].z);
+      if(planet_id != -1) {
+        var o = new Object();
+        o.spacePart = positions[planet_id].spacePart;
+        o.id = planet_id;
+        update_selection(o);
+        target.x = parseInt(positions[planet_id].x);
+        target.y = parseInt(positions[planet_id].y);
+        target.z = parseInt(positions[planet_id].z);
+      }
+      if(fleet_id != -1) {
+        var index = fleet_index[fleet_id];
+        var o = new Object();
+        o.spacePart = "F";
+        o.index_id = fleet_id;
+        update_selection(o);
+        var this_fleet = fleets[index[0].t][index[0].id-1];//pick first fleet from stack for zooming
+        target.x = parseInt(this_fleet.x);
+        target.y = parseInt(this_fleet.y);
+        target.z = parseInt(this_fleet.z);
+      }
       
       //Zoom on target
-      target.range -= 100;
+      target.range -= current.range > 200 ? 100 : 50;
 
       animate_transition_start();
     }
+    
+    function update_selection(new_select) {
+      if(new_select === null) {
+        selected_object = null;
+        $("#canvasMapItemInfo").html("keine Flotte / Planet ausgewählt");
+      } else if (new_select.spacePart !== undefined && ( new_select.spacePart == "P" || new_select.spacePart == "H" || new_select.spacePart == "S")) {
+        selected_object = new_select;
+        var planet_id = selected_object.id;
+        var tipText = positions[planet_id].label+"<br />"+positions[planet_id].posLabel+"<br />";
+        var sendText = $("#sendText").text();
+        var sendId = positions[planet_id].partId;
+        switch(selected_object.spacePart)
+        {
+            case "P":
+                tipText += "<a class='helpIndexLink' href='mil_sendFleetToPlanet.php?id="+sendId+"'>";
+                break;
+            case "H":
+                tipText += "<a class='helpIndexLink' href='mil_sendFleetToHomebase.php?id="+sendId+"'>";
+                break;
+            case "S":
+                tipText += "<a class='helpIndexLink' href='mil_sendFleetToStar.php?id="+sendId+"'>";
+                break;
+        }
+        tipText += sendText+"</a>";
+        $("#canvasMapItemInfo").html(tipText);        
+      } else if (new_select.spacePart !== undefined && new_select.spacePart == "F") {
+        selected_object = new_select;
+        var index = fleet_index[selected_object.index_id];
+
+        var iteminfohtml = [];
+        var this_fleet;
+        for(var i = 0; i < index.length; i += 1) {
+          if(selected_object.id === undefined) {
+            selected_object.id = index[i].id-1;
+            selected_object.fleetType = index[i].t;
+          }
+          console.log(selected_object);
+          this_fleet = fleets[index[i].t][index[i].id-1];
+          iteminfohtml.push(this_fleet.name+"<br>"+this_fleet.state+"/"+this_fleet.mission+"<br>("+this_fleet.x+"/"+this_fleet.y+"/"+this_fleet.z+")");
+        }
+        $("#canvasMapItemInfo").html(iteminfohtml.join("<hr>"));
+      }       
+      draw();
+    }
+
     
     function rotate_around_current(vector)
     {
@@ -408,7 +478,7 @@ $(document).ready(function()
     {
         var draw_baseline_close = current.range <= 100;
         var temp;
-        var i, fleet_type, planet_id;
+        var i, fleetType, planet_id;
 
         var scale = current.range*2;
         var min = { x : current.x - current.range,
@@ -430,14 +500,14 @@ $(document).ready(function()
           fleet_index = [];
           var index_number = 1;
           
-          for(fleet_type in fleets) {
-            for(i = 0; i < fleets[fleet_type].length; i += 1) {
-              temp = rotate_around_current(fleets[fleet_type][i])
+          for(fleetType in fleets) {
+            for(i = 0; i < fleets[fleetType].length; i += 1) {
+              temp = rotate_around_current(fleets[fleetType][i])
               temp.id = i;
               temp.spacePart = "F";
               temp.type = "Fleet";
-              temp.subType = fleet_draw_config[fleet_type].subType;
-              temp.fleetType = fleet_type;
+              temp.subType = fleet_draw_config[fleetType].subType;
+              temp.fleetType = fleetType;
               temp.rot_z +=0.1; //HACK: force fleet in front of planet
               drawlist.push(temp);
             }
@@ -521,6 +591,15 @@ $(document).ready(function()
             ctx.globalCompositeOperation = "source-over";
 
             ctx.globalAlpha = object_alpha;
+            if(selected_object !== null && type == selected_object.spacePart && drawlist[i].id==selected_object.id && selected_object.fleetType == drawlist[i].fleetType ){
+                var grd=ctx.createRadialGradient(0,0,0,0,0,object_size*1.8);
+                grd.addColorStop(0.8,"#000");
+                grd.addColorStop(0.9,"#ff0");
+                ctx.fillStyle=grd;
+                ctx.beginPath();
+                ctx.arc(0,0,object_size*1.8,0,2*Math.PI);
+                ctx.fill();
+            }
             if(drawlist[i].isOwner == 1){
                 var grd=ctx.createRadialGradient(0,0,0,0,0,object_size*1.5);
                 grd.addColorStop(0.8,"#000");
@@ -529,7 +608,6 @@ $(document).ready(function()
                 ctx.beginPath();
                 ctx.arc(0,0,object_size*1.5,0,2*Math.PI);
                 ctx.fill();
-
             }
             ctx.drawImage(spritesheet,sx,sy,50,50,0-object_size,0-object_size,2*object_size, 2*object_size);
             ctx.restore();
