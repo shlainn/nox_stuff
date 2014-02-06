@@ -46,6 +46,7 @@ $(document).ready(function()
       "P" : {"baseline_always": false, "baseline_close": true, "baseline_color": "#020", "label": false, "size_min": 4, "size_max": 10},
       "F" : {"baseline_always": false, "baseline_close": false, "baseline_color": "#020", "label": false, "size_min": 6, "size_max": 8}
     };
+
     var fleet_draw_config = {
       "myFleets" : {"subType":3},
       "unionFleets" : {"subType":1},
@@ -260,7 +261,8 @@ $(document).ready(function()
       if(planet_id != -1)
       {
         var distance = calc_dist({x:fleetX, y:fleetY, z:fleetZ},{x:positions[planet_id].x, y:positions[planet_id].y, z:positions[planet_id].z});
-        var tipText = positions[planet_id].label+"<br />"+positions[planet_id].posLabel+"<br />"+"Distance: "+distance+" pc<br />";
+        var dist_current = calc_dist(current,{x:positions[planet_id].x, y:positions[planet_id].y, z:positions[planet_id].z});
+        var tipText = positions[planet_id].label+"<br />"+positions[planet_id].posLabel+"<br />"+"Distance: "+distance+" pc<br />To current:"+dist_current;
         var sendText = $("#sendText").text();
         var sendId = positions[planet_id].partId;
         switch(positions[planet_id].spacePart)
@@ -290,7 +292,7 @@ $(document).ready(function()
         }
         tooltip.html(tooltip_html.join("<hr>"));
       }
-      var temp =rotate_around_current(positions[planet_id]);
+      var temp = planet_id != -1 ? rotate_around_current(positions[planet_id]) : rotate_around_current(this_fleet);
 
       var screen_x = canvas.padding+(temp.rot_x-min.x)*((canvas.width-2*canvas.padding)/scale);
       var screen_y = (canvas.height / 2)+(temp.rot_z-min.z)*((canvas.height / 2 - canvas.padding)/scale);
