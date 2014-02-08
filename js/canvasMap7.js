@@ -60,16 +60,18 @@ $(document).ready(function()
         "OrangeDwarf" : 30, "RedDwarf" : 31, "YellowDwarf" : 32, "Homebase": 33, "Fleet": 34,
     };
 
+    var planetId = parseInt($("#planetId").text());
+    var homebaseId = parseInt($("#homebaseId").text());
     var fleetId = parseInt($("#fleetId").text());
-    var fleetX = parseInt($("#fleetX").text());
-    var fleetY = parseInt($("#fleetY").text());
-    var fleetZ = parseInt($("#fleetZ").text());
-    var fleetRange = parseInt($("#fleetRangeOfSight").text());
-    var target = {x: fleetX,y: fleetY,z: fleetZ, range: fleetRange, angle: 0};
-    var current = {x: fleetX,y: fleetY,z: fleetZ, range: 2000, angle: 180};
+    var viewPosX = parseInt($("#viewPosX").text());
+    var viewPosY = parseInt($("#viewPosY").text());
+    var viewPosZ = parseInt($("#viewPosZ").text());
+    var viewRange = parseInt($("#viewRangeOfSight").text());
+    var target = {x: viewPosX,y: viewPosY,z: viewPosZ, range: viewRange, angle: 0};
+    var current = {x: viewPosX,y: viewPosY,z: viewPosZ, range: 2000, angle: 180};
 
     var spritesheet = new Image();
-    spritesheet.onload = function(){getSpaceParts(fleetId);};
+    spritesheet.onload = function(){getSpaceParts(fleetId, homebaseId, planetId);};
     spritesheet.src = $("#planetSrc").text();
     
     var c=$("#canvasMapArea")[0];
@@ -82,13 +84,13 @@ $(document).ready(function()
         reset_view();
     }
     
-    function getSpaceParts(fleetId)
+    function getSpaceParts(fleetId, homebaseId, planetId)
     {
         $.ajax(
         {
             type: "POST",
             url: "mil_canvasMap_getAllSpaceParts.php",
-            data: "fleetId=" + fleetId,
+            data: "fleetId=" + fleetId + "&homebaseId=" + homebaseId + "&planetId=" + planetId,
             async: false,
             success: function(dataArray)
             {
@@ -105,13 +107,13 @@ $(document).ready(function()
         });
     }
     
-    function getHeatmap(fleetId)
+    function getHeatmap(fleetId, homebaseId, planetId)
     {
         $.ajax(
         {
             type: "POST",
             url: "mil_canvasMap_getHeatmap.php",
-            data: "fleetId=" + fleetId,
+            data: "fleetId=" + fleetId + "&homebaseId=" + homebaseId + "&planetId=" + planetId,
             async: true,
             success: function(dataArray)
             {
@@ -128,13 +130,13 @@ $(document).ready(function()
         });
     }
 
-    function getVisibleFleets(fleetId, x, y, z, rangeOfSight)
+    function getVisibleFleets(fleetId, homebaseId, planetId, x, y, z, rangeOfSight)
     {
         $.ajax(
         {
             type: "POST",
             url: "mil_canvasMap_getVisibleFleets.php",
-            data: "fleetId=" + fleetId + "&x=" + x + "&y=" + y + "&z=" + z + "&mapRangeOfSight=" + rangeOfSight,
+            data: "fleetId=" + fleetId + "&homebaseId=" + homebaseId + "&planetId=" + planetId + "&x=" + x + "&y=" + y + "&z=" + z + "&mapRangeOfSight=" + rangeOfSight,
             async: true,
             success: function(dataArray)
             {
@@ -168,7 +170,7 @@ $(document).ready(function()
         window.requestAnimationFrame = function(callback, element) {
             var currTime = new Date().getTime();
             var timeToCall = Math.max(0, 16 - (currTime - lastTime));
-            var id = window.setTimeout(function() { callback(currTime + timeToCall); }, 
+            var id = window.setTimeout(function() { callback(currTime + timeToCall); },
               timeToCall);
             lastTime = currTime + timeToCall;
             return id;
@@ -265,7 +267,7 @@ $(document).ready(function()
       
       if(planet_id != -1)
       {
-        var distance = calc_dist({x:fleetX, y:fleetY, z:fleetZ},{x:positions[planet_id].x, y:positions[planet_id].y, z:positions[planet_id].z});
+        var distance = calc_dist({x:viewPosX, y:viewPosY, z:viewPosZ},{x:positions[planet_id].x, y:positions[planet_id].y, z:positions[planet_id].z});
         var dist_current = calc_dist(current,{x:positions[planet_id].x, y:positions[planet_id].y, z:positions[planet_id].z});
         var tipText = positions[planet_id].label+"<br />"+positions[planet_id].posLabel+"<br />"+"Distance: "+distance+" pc<br />To current:"+dist_current+"<br />";
 //         var sendText = $("#sendText").text();
@@ -293,7 +295,7 @@ $(document).ready(function()
         var this_fleet;
         for(var i = 0; i < index.length; i += 1) {
           this_fleet = fleets[index[i].t][index[i].id-1];
-          tooltip_html.push(this_fleet.name+"<br>"+this_fleet.state+"/"+this_fleet.mission+"<br>("+this_fleet.x+"/"+this_fleet.y+"/"+this_fleet.z+")");
+          tooltip_html.push(this_fleet.name+"<br>"+this_fleet.state+" / "+this_fleet.mission+"<br>("+this_fleet.x+"/"+this_fleet.y+"/"+this_fleet.z+")");
         }
         tooltip.html(tooltip_html.join("<hr>"));
       }
@@ -329,9 +331,9 @@ $(document).ready(function()
         o.spacePart = positions[planet_id].spacePart;
         o.id = planet_id;
         update_selection(o);
-        target.x = parseInt(positions[planet_id].x);
-        target.y = parseInt(positions[planet_id].y);
-        target.z = parseInt(positions[planet_id].z);
+      target.x = parseInt(positions[planet_id].x);
+      target.y = parseInt(positions[planet_id].y);
+      target.z = parseInt(positions[planet_id].z);
       }
       if(fleet_id != -1) {
         var index = fleet_index[fleet_id];
@@ -621,6 +623,7 @@ $(document).ready(function()
                 ctx.beginPath();
                 ctx.arc(0,0,object_size*1.5,0,2*Math.PI);
                 ctx.fill();
+
             }
             ctx.drawImage(spritesheet,sx,sy,50,50,0-object_size,0-object_size,2*object_size, 2*object_size);
             ctx.restore();
@@ -664,7 +667,6 @@ $(document).ready(function()
             ctx.fillStyle="yellow";
             ctx.fillText(textboxes[i][0],textboxes[i][1]+2, textboxes[i][2]);
         }
-                
     }
 
 
@@ -705,11 +707,11 @@ $(document).ready(function()
               current[i] = target[i];
             }
             if(show_fleet_overlay && current.range <= 200) {
-              getVisibleFleets(fleetId, current.x, current.y, current.z, current.range);
+              getVisibleFleets(fleetId, homebaseId, planetId, current.x, current.y, current.z, current.range);
             }
             draw();
         }
-        $("#fleetRangeOfSight").html(Math.floor(current.range));
+        $("#viewRangeOfSight").html(Math.floor(current.range));
     }
 
     // http://www.gizma.com/easing/#cub3
@@ -835,13 +837,13 @@ $(document).ready(function()
         //Do some AJAX here
         if (current.range >= 200) {
             if(fleet_sectors === undefined) {
-              getHeatmap(fleetId);
+              getHeatmap(fleetId, homebaseId, planetId);
             } else {
               scan_animation_stop = 1;
             }
         }
         if (current.range <= 200) {
-            getVisibleFleets(fleetId, current.x, current.y, current.z, current.range);
+            getVisibleFleets(fleetId, homebaseId, planetId, current.x, current.y, current.z, current.range);
         }
     }
 
