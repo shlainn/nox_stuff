@@ -300,8 +300,8 @@ $(document).ready(function()
       var temp = planet_id != -1 ? rotate_around_current(positions[planet_id]) : rotate_around_current(this_fleet);
 
       var screen_x = canvas.padding+(temp.rot_x-min.x)*((canvas.width-2*canvas.padding)/scale);
-      var screen_y = (canvas.height / 2)+(temp.rot_z-min.z)*((canvas.height / 2 - canvas.padding)/scale);
-      var y_offset = (temp.rot_y-min.y)*((canvas.height / 2)/scale);
+      var screen_y = (canvas.height * 0.5)+(temp.rot_z-min.z)*((canvas.height * 0.5 - canvas.padding)/scale);
+      var y_offset = (temp.rot_y-min.y)*((canvas.height)/scale) - canvas.height * 0.25;
       tooltip.css("display", "block");
       tooltip.offset({"top": parseInt(parentOffset.top+screen_y-y_offset)+3,"left": parseInt(parentOffset.left)+screen_x+15});
     }
@@ -421,7 +421,7 @@ $(document).ready(function()
           z : current.z - current.range
       };
 
-      var gridsize = 25 * 1 << Math.floor((scale)/400);
+      var gridsize = 25 * 1 << Math.floor((scale) / 400);
       var gridbase_x = Math.floor(current.x/gridsize)*gridsize;
       var gridbase_z = Math.floor(current.z/gridsize)*gridsize;
       var num_grid = Math.ceil(current.range/gridsize)+1;
@@ -433,20 +433,20 @@ $(document).ready(function()
         //horizontal line
         v = rotate_around_current({x: gridbase_x+gridsize*i, z: gridbase_z-num_grid*gridsize});
         screen_x = canvas.padding+(v.rot_x-min.x)*((canvas.width-2*canvas.padding)/scale);
-        screen_y = (canvas.height / 2)+(v.rot_z-min.z)*((canvas.height / 2 - canvas.padding)/scale);
+        screen_y = (canvas.height * 0.5)+(v.rot_z-min.z)*((canvas.height * 0.5 - canvas.padding)/scale);
         ctx.moveTo(screen_x, screen_y);
         v = rotate_around_current({x: gridbase_x+gridsize*i, z: gridbase_z+num_grid*gridsize});
         screen_x = canvas.padding+(v.rot_x-min.x)*((canvas.width-2*canvas.padding)/scale);
-        screen_y = (canvas.height / 2)+(v.rot_z-min.z)*((canvas.height / 2 - canvas.padding)/scale);
+        screen_y = (canvas.height * 0.5)+(v.rot_z-min.z)*((canvas.height * 0.5 - canvas.padding)/scale);
         ctx.lineTo(screen_x, screen_y);
         //vertical line line
         v = rotate_around_current({x: gridbase_x-num_grid*gridsize, z: gridbase_z+gridsize*i});
         screen_x = canvas.padding+(v.rot_x-min.x)*((canvas.width-2*canvas.padding)/scale);
-        screen_y = (canvas.height / 2)+(v.rot_z-min.z)*((canvas.height / 2 - canvas.padding)/scale);
+        screen_y = (canvas.height * 0.5)+(v.rot_z-min.z)*((canvas.height * 0.5 - canvas.padding)/scale);
         ctx.moveTo(screen_x, screen_y);
         v = rotate_around_current({x: gridbase_x+num_grid*gridsize, z: gridbase_z+gridsize*i});
         screen_x = canvas.padding+(v.rot_x-min.x)*((canvas.width-2*canvas.padding)/scale);
-        screen_y = (canvas.height / 2)+(v.rot_z-min.z)*((canvas.height / 2 - canvas.padding)/scale);
+        screen_y = (canvas.height * 0.5)+(v.rot_z-min.z)*((canvas.height * 0.5 - canvas.padding)/scale);
         ctx.lineTo(screen_x, screen_y);
       }
       ctx.stroke();
@@ -454,7 +454,7 @@ $(document).ready(function()
       ctx.save();
       ctx.globalAlpha = 0.6;
       ctx.globalCompositeOperation = "destination-atop";
-      ctx.translate((canvas.width / 2),370);
+      ctx.translate((canvas.width * 0.5),370);
       var grd=ctx.createRadialGradient(0,0,0,0,0,305);
       grd.addColorStop(0,"#005");
       grd.addColorStop(0.85,"#003");
@@ -526,8 +526,8 @@ $(document).ready(function()
             //Position calculations
             //magic numbers here are derived from canvas width and height, with a 10px padding
             var screen_x = canvas.padding+(x-min.x)*((canvas.width-2*canvas.padding)/scale);
-            var screen_y = (canvas.height / 2)+(z-min.z)*((canvas.height / 2 - canvas.padding)/scale);
-            var y_offset = (y-min.y)*((canvas.height / 2)/scale);
+            var screen_y = (canvas.height * 0.5)+(z-min.z)*((canvas.height * 0.5 - canvas.padding)/scale);
+            var y_offset = (y-min.y)*((canvas.height)/scale) - canvas.height * 0.25;
 
             if(screen_x > (canvas.width - canvas.padding) || screen_y-y_offset > (canvas.height - canvas.padding))
               continue;
@@ -540,14 +540,15 @@ $(document).ready(function()
 
 
             var object_size = current.range >= 200 ? draw_config[type].size_min : current.range <= 50 ? draw_config[type].size_max : draw_config[type].size_max-Math.floor( ((current.range-50)/150) * (draw_config[type].size_max-draw_config[type].size_min));
-            var object_angle = drawlist[i].angle || 0;
+          
+            var object_angle = 0;
             
             var idx = types[drawlist[i].type]+parseInt(drawlist[i].subType)-1;
             var sx = (idx%5)*50;
             var sy = Math.floor(idx/5)*50;
 
             ctx.lineWidth = 1;
-            var base_inside_grid = Math.pow(screen_x-(canvas.width / 2),2)/Math.pow((canvas.width / 2),2) + Math.pow(screen_y-370,2)/Math.pow(120,2) <= 1;
+            var base_inside_grid = Math.pow(screen_x-(canvas.width * 0.5),2)/Math.pow((canvas.width * 0.5),2) + Math.pow(screen_y-370,2)/Math.pow(120,2) <= 1;
             if(type != "F") {
               planet_id = drawlist[i].id + 1;
             }
@@ -555,6 +556,18 @@ $(document).ready(function()
               object_alpha = 1;
               screen_x += object_size/2;//offset fleeet vs planet
               screen_y += object_size/2;
+              
+              //calculate display angle
+              var tempvec = {x: drawlist[i].dX*10+drawlist[i].x, y: drawlist[i].dY*10+drawlist[i].y, z: drawlist[i].dZ*10+drawlist[i].z};
+              tempvec = rotate_around_current(tempvec);
+              var screen_x2 = canvas.padding+(tempvec.rot_x-min.x)*((canvas.width-2*canvas.padding)/scale) + object_size/2;
+              var screen_y2 = (canvas.height * 0.5)+(tempvec.rot_z-min.z)*((canvas.height * 0.5 - canvas.padding)/scale) + object_size/2;
+              var y_offset2 = (tempvec.rot_y-min.y)*((canvas.height)/scale) - canvas.height * 0.25;
+
+              var vsx = screen_x2-screen_x;
+              var vsy = (screen_y2-y_offset2)-(screen_y-y_offset);
+              var scalar_product = (10 * vsx) / (10*Math.sqrt(Math.pow(vsx,2)+Math.pow(vsy,2)));
+              var object_angle = (vsy >= 0 ? 1 : -1 ) * Math.acos(scalar_product)/Math.PI*180;
             }
             if(base_inside_grid && (draw_config[type].baseline_always || ( draw_baseline_close && draw_config[type].baseline_close)))
             {
@@ -651,6 +664,7 @@ $(document).ready(function()
             ctx.fillStyle="yellow";
             ctx.fillText(textboxes[i][0],textboxes[i][1]+2, textboxes[i][2]);
         }
+                
     }
 
 
@@ -716,13 +730,6 @@ $(document).ready(function()
       click_ctx.clearRect(0,0,canvas.width,canvas.height);
       draw_grid();
       draw_space_objects(positions);
-// if(show_fleet_overlay)
-// {
-// if(current.range >= 200)
-// draw_heatmap();
-// if(current.range <= 200)
-// draw_fleet_positions();
-// }
     }
 
     function check_values()
@@ -843,7 +850,7 @@ $(document).ready(function()
       var a = progress*2*Math.PI;
 
       ctx.save();
-      ctx.translate((canvas.width / 2),(canvas.height / 2));
+      ctx.translate((canvas.width * 0.5),(canvas.height * 0.5));
       ctx.scale(1,canvas.height/canvas.width);
       ctx.fillStyle="rgba(0,255,0,0.2)";
       for(var i = 1; i < 6; i += 1) {
@@ -884,7 +891,7 @@ $(document).ready(function()
       ctx.strokeStyle="lime";
       ctx.font="bold 40px Courier New ";
       ctx.textAlign="center";
-      ctx.strokeText("...SCANNING...",(canvas.width / 2),370);
+      ctx.strokeText("...SCANNING...",(canvas.width * 0.5),370);
       ctx.textAlign="start";
 
       if(!scan_animation_stop || (time-scan_animation_start) < scan_animation_duration) {
@@ -964,10 +971,10 @@ $(document).ready(function()
             //Position calculations
             //magic numbers here are derived from canvas width and height, with a 10px padding
             var screen_x = canvas.padding+(xyz.rot_x-min.x)*((canvas.width-2*canvas.padding)/scale);
-            var screen_y = (canvas.height / 2)+(xyz.rot_z-min.z)*((canvas.height / 2 - canvas.padding)/scale);
-            var y_offset = (xyz.rot_y-min.y)*((canvas.height / 2)/scale);
+            var screen_y = (canvas.height * 0.5)+(xyz.rot_z-min.z)*((canvas.height * 0.5 - canvas.padding)/scale);
+            var y_offset = (xyz.rot_y-min.y)*((canvas.height)/scale) - canvas.height * 0.25;
             
-            var angle = Math.atan2(screen_y-y_offset-(canvas.height / 2), screen_x-(canvas.width / 2));
+            var angle = Math.atan2(screen_y-y_offset-(canvas.height * 0.5), screen_x-(canvas.width * 0.5));
             if( angle < 0)
               angle += 2*Math.PI;
 
