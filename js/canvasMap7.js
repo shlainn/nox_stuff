@@ -386,7 +386,7 @@ $(document).ready(function()
       }
       
       //Zoom on target
-      target.range = current.range > 200 ? 200 : current.range / 2;
+      target.range = current.range > 200 ? 200 : (current.range > 100 ? 100 : current.range);
       $("#canvasTooltip").css("display", "none");
       animate_transition_start();
     }
@@ -581,7 +581,7 @@ $(document).ready(function()
             }
 
 
-            var object_size = current.range >= 300 ? draw_config[type].size_min : easeInQuad(300-current.range, draw_config[type].size_min,draw_config[type].size_max - draw_config[type].size_min ,275)
+            var object_size = current.range >= 300 ? draw_config[type].size_min : easeInQuart(300-current.range, draw_config[type].size_min,draw_config[type].size_max - draw_config[type].size_min ,275)
 
             var object_angle = 0;
             
@@ -773,7 +773,7 @@ $(document).ready(function()
         return c/2*(t*t*t + 2) + b;
     }
     
-    function easeInQuad (t, b, c, d) {
+    function easeInQuart (t, b, c, d) {
         t /= d;
         return c*t*t*t*t + b;
     }
