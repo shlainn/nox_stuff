@@ -10,8 +10,8 @@ $(document).ready(function()
     $("#canvasMapArea").mouseup(function() {canvasmap_drag_stop();});
     
     $("#resetView").click(function() { reset_view(); });
-    $("#zoomIn").click(function() { zoom(-50); });
-    $("#zoomOut").click(function() { zoom(50); });
+    $("#zoomIn").click(function() { zoom(current.range>200 ? -200 : -current.range / 2); });
+    $("#zoomOut").click(function() { zoom(current.range>200 ? 200 : current.range); });
     $("#rotateLeft").click(function() { rotate(-60); });
     $("#rotateRight").click(function() { rotate(60); });
 
@@ -40,9 +40,13 @@ $(document).ready(function()
     var animation_duration = 1000, scan_animation_duration = 1500;
     var canvas = {"width" : 630, "height": 500, "padding": 10};
     var draw_config = {
-      "S" : {"baseline_always": true, "baseline_close": true, "baseline_color": "#050", "label": "sName", "size_min": 8, "size_max": 20},
-      "H" : {"baseline_always": false, "baseline_close": false, "baseline_color": "#003", "label": false, "size_min": 4, "size_max": 8},
-      "P" : {"baseline_always": false, "baseline_close": true, "baseline_color": "#020", "label": false, "size_min": 4, "size_max": 10},
+//       "S" : {"baseline_always": true, "baseline_close": true, "baseline_color": "#050", "label": "sName", "size_min": 8, "size_max": 25},
+//       "H" : {"baseline_always": false, "baseline_close": false, "baseline_color": "#003", "label": false, "size_min": 5, "size_max": 10},
+//       "P" : {"baseline_always": false, "baseline_close": true, "baseline_color": "#020", "label": false, "size_min": 4, "size_max": 12},
+//       "F" : {"baseline_always": false, "baseline_close": false, "baseline_color": "#020", "label": false, "size_min": 4, "size_max": 6}
+      "S" : {"baseline_always": true, "baseline_close": true, "baseline_color": "#050", "label": "sName", "size_min": 8, "size_max": 50},
+      "H" : {"baseline_always": false, "baseline_close": false, "baseline_color": "#003", "label": false, "size_min": 5, "size_max": 20},
+      "P" : {"baseline_always": false, "baseline_close": true, "baseline_color": "#020", "label": false, "size_min": 4, "size_max": 25},
       "F" : {"baseline_always": false, "baseline_close": false, "baseline_color": "#020", "label": false, "size_min": 4, "size_max": 6}
     };
     
@@ -66,9 +70,9 @@ $(document).ready(function()
         "OrangeDwarf" : 30, "RedDwarf" : 31, "YellowDwarf" : 32, "Homebase": 33, "Fleet": 34,
     };
 
-    var planetId = parseInt($("#planetId").text());
-    var homebaseId = parseInt($("#homebaseId").text());
-    var fleetId = parseInt($("#fleetId").text());
+    var planetId = parseInt($("#planetId").text()) || 0;
+    var homebaseId = parseInt($("#homebaseId").text()) || 0;
+    var fleetId = parseInt($("#fleetId").text()) || 0;
     var viewPosX = parseInt($("#viewPosX").text());
     var viewPosY = parseInt($("#viewPosY").text());
     var viewPosZ = parseInt($("#viewPosZ").text());
@@ -143,6 +147,8 @@ $(document).ready(function()
                     fleet_sectors = jQuery.parseJSON(dataArray);
                 }
                 scan_animation_stop = 1;
+                draw();
+              
             },
             error: function()
             {
@@ -188,7 +194,9 @@ $(document).ready(function()
                             }
                           }
                         }
+                        
                         fleets[partId] = result[fleetType][i];
+                        fleets[partId].fleetType = fleetType;
                       }
                     }
                   
@@ -230,10 +238,11 @@ $(document).ready(function()
         };
     }
 
-    var map_drag = false, map_drag_prevent_click = false;
+    var map_drag = false, map_drag_prevent_click = false, map_was_dragged = false;
     var map_drag_position;
     function canvasmap_drag_start(e) {
       map_drag = true;
+      map_was_dragged = false;
       setTimeout(function(){map_drag_prevent_click = true;},200);
       if (!e)
         e = window.event;
@@ -247,8 +256,8 @@ $(document).ready(function()
     function canvasmap_drag_stop() {
       map_drag = false;
       setTimeout(function(){map_drag_prevent_click = false;},200);
-      if(show_fleet_overlay && current.range <= 200) {
-        getVisibleFleets(fleetId, current.x, current.y, current.z, current.range);
+      if(show_fleet_overlay && map_was_dragged) {
+        fleet_scan_request_start();
       }      
     }
 
@@ -288,15 +297,19 @@ $(document).ready(function()
 
       //drag
       if(map_drag) {
+        map_was_dragged = true;
         var deltaX = offsetX - map_drag_position.offsetX;
         var deltaY = (map_drag_position.offsetY - offsetY)*2;
         var deltaX2 = deltaY * Math.sin(angle) - deltaX * Math.cos(angle);
         var deltaY2 = deltaX * Math.sin(angle) + deltaY * Math.cos(angle);
         current.x += (deltaX2/canvas.width ) * scale;
         current.z += (deltaY2/canvas.height ) * scale;
+        target.x = current.x;
+        target.z = current.z;
         draw();
         map_drag_position.offsetX = offsetX;
         map_drag_position.offsetY = offsetY;
+        $("#canvasTooltip").css("display", "none");
         return;
       }
       //Tooltip
@@ -373,15 +386,16 @@ $(document).ready(function()
       }
       
       //Zoom on target
-      target.range -= current.range > 200 ? 100 : 50;
-
+      target.range = current.range > 200 ? 200 : current.range / 2;
+      $("#canvasTooltip").css("display", "none");
       animate_transition_start();
     }
     
     function update_selection(new_select) {
       if(new_select === null) {
         selected_object = null;
-        $("#canvasMapItemInfo").html("keine Flotte / Planet ausgewählt");
+        var no_part_selected = $("#noPartSelected").text();
+        $("#canvasMapItemInfo").html(no_part_selected);
       } else if (new_select > 0 && new_select < fleet_index_offset) {
         selected_object = new_select;
         var planet_id = new_select;
@@ -511,6 +525,8 @@ $(document).ready(function()
           y : current.y - current.range,
           z : current.z - current.range
         };
+        var object_alpha_range = current.range >= 250 ? 0.8 : 0.2+0.6*((current.range-25)/225);
+        var object_alpha_min = 1 - object_alpha_range;
 
 
         var textboxes = [];
@@ -550,12 +566,23 @@ $(document).ready(function()
             if(screen_x < canvas.padding || screen_y-y_offset < canvas.padding)
               continue;
 
-            var object_alpha = 0.2+ 0.8*((z - min.z)/scale);
-            if (object_alpha < 0.2)
-              object_alpha = 0.2;
+            var base_inside_grid = Math.pow(screen_x-(canvas.width * 0.5),2)/Math.pow((canvas.width * 0.5),2) + Math.pow(screen_y-370,2)/Math.pow(120,2) <= 1;
+
+            var object_alpha;
+            if(base_inside_grid) {
+              object_alpha = object_alpha_min+ object_alpha_range*((z - min.z)/scale);
+              if (object_alpha < object_alpha_min)
+                object_alpha = object_alpha_min;
+            } else {
+              object_alpha = 0.2+ (object_alpha_min-0.2)*((z - min.z)/scale);
+              if (object_alpha < 0.2)
+                object_alpha = 0.2;
+
+            }
 
 
-            var object_size = current.range >= 200 ? draw_config[type].size_min : current.range <= 50 ? draw_config[type].size_max : draw_config[type].size_max-Math.floor( ((current.range-50)/150) * (draw_config[type].size_max-draw_config[type].size_min));
+            var object_size = current.range >= 300 ? draw_config[type].size_min : easeInQuad(300-current.range, draw_config[type].size_min,draw_config[type].size_max - draw_config[type].size_min ,275)
+
             var object_angle = 0;
             
             var idx = drawlist[i].idx;
@@ -563,12 +590,14 @@ $(document).ready(function()
             var sy = Math.floor(idx/5)*50;
 
             ctx.lineWidth = 1;
-            var base_inside_grid = Math.pow(screen_x-(canvas.width * 0.5),2)/Math.pow((canvas.width * 0.5),2) + Math.pow(screen_y-370,2)/Math.pow(120,2) <= 1;
             if(type != "F") {
               planet_id = drawlist[i].partId;
             }
-            else {
-              object_alpha = 1;
+            else {//Fleet
+              if(base_inside_grid)//highlight fleets on grid
+                object_alpha = 1;
+              else
+                object_alpha = 0.2;
               screen_x += object_size/2;//offset fleet vs planet
               screen_y += object_size/2;
               
@@ -659,7 +688,8 @@ $(document).ready(function()
                 fleet_index[object_id-fleet_index_offset].push(drawlist[i].partId);
               }
             }
-            
+
+
             if(draw_config[type].label !== false) {
               textboxes.push([spaceParts[planet_id][draw_config[type].label],canvas.padding+screen_x,canvas.padding+5+screen_y-y_offset]);
             }
@@ -669,8 +699,9 @@ $(document).ready(function()
         //Heatmap on top of planets and fleets
         if(show_fleet_overlay)
         {
-          if(current.range >= 200)
+          if(current.range >= 200){
             draw_heatmap();
+          }
         }
         //Now draw the Textboxes on top of everything
         ctx.font="14px Georgia";
@@ -722,8 +753,8 @@ $(document).ready(function()
             for(i in current) {
               current[i] = target[i];
             }
-            if(show_fleet_overlay && current.range <= 200) {
-              getVisibleFleets(fleetId, homebaseId, planetId, current.x, current.y, current.z, current.range);
+            if(show_fleet_overlay) {
+              fleet_scan_request_start();
             }
             draw();
         }
@@ -741,6 +772,11 @@ $(document).ready(function()
         t -= 2;
         return c/2*(t*t*t + 2) + b;
     }
+    
+    function easeInQuad (t, b, c, d) {
+        t /= d;
+        return c*t*t*t*t + b;
+    }
 
     function draw()
     {
@@ -752,9 +788,10 @@ $(document).ready(function()
 
     function check_values()
     {
-      target.range = Math.ceil(target.range / 50) * 50; // round to full 50
-      if(target.range <=50)
-        target.range = 50;
+      var round_range = current.range > 200 ? 50 : 25;
+      target.range = Math.ceil(target.range / round_range) * round_range; // round to full round_range
+      if(target.range <=25)
+        target.range = 25;
       if(target.range >=2000)
         target.range = 2000;
       if((target.angle > 360 && current.angle > 360) || (target.angle < -360 && current.angle < -360) ) {
