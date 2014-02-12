@@ -32,11 +32,14 @@ $(document).ready(function()
     var translate = {};
     translate.sendText = $("#sendText").text();
     translate.no_part_selected = $("#noPartSelected").text();
+    translate.activate_scan_to_see_fleets = "Flottenscan starten um Flotten anzuzeigen";
 
     
     var scan_animation_start, scan_animation_start2, scan_animation_step, scan_animation_stop = false;
     var animation_progress_previous = 0;
     var show_fleet_overlay = false;
+    var list_all_my_fleets = false;
+    var list_all_foreign_fleets = false;
 
     var drawlist =[], spaceParts = {}, fleets = {}, fleet_sectors, fleet_index, selected_object = null;
     var animation_start;
@@ -204,10 +207,10 @@ $(document).ready(function()
                         fleets[partId].fleetType = fleetType;
                       }
                     }
-                  
                 }
                 scan_animation_stop = 1;
                 draw();
+                update_fleet_list();
             },
             error: function()
             {
@@ -1058,5 +1061,38 @@ $(document).ready(function()
     function fleet_scan_abort() {
       scan_animation_stop = -1;
     }
+    
+    function update_fleet_list() {
+      var myCanvasFleets = $("#myCanvasFleets tbody");
+      var foreignCanvasFleets = $("#foreignCanvasFleets tbody");
+      
+      if(!show_fleet_overlay) {
+        myCanvasFleets.html("<tr class=\"queueItemOdd\"><td colspan=\"5\">"+translate.activate_scan_to_see_fleets+"</td></tr>");
+        foreignCanvasFleets.html("<tr class=\"queueItemOdd\"><td colspan=\"4\">"+translate.activate_scan_to_see_fleets+"</td></tr>");
+        return;
+      }
+      var myfleets_html = [];
+      var foreignfleets_html = [];
+      var actions = "";
+      for(i in fleets) {
+        if(fleets[i].fleetType == "myFleets" && (list_all_my_fleets === true || calc_dist(current, fleets[i]) < current.range)){
+          myfleets_html.push([fleets[i].name, fleets[i].label, fleets[i].state+"/"+fleets[i].mission, fleets[i].destination, actions].join("</td><td>"));
+        }
+        if(fleets[i].fleetType == "foreignFleets" && (list_all_foreign_fleets === true || calc_dist(current, fleets[i]) < current.range)){
+          foreignfleets_html.push([fleets[i].name, fleets[i].label, fleets[i].state+"/"+fleets[i].mission, actions].join("</td><td>"));
+        }
+        
+      }
+      
+      myCanvasFleets.html("<tr class=\"queueItemOdd\"><td>"+myfleets_html.join("</td></tr><tr class=\"queueItemOdd\"><td>")+"</td></tr>");
+      
+      if(current.range > 200 && list_all_foreign_fleets == false)
+        return
+
+      foreignCanvasFleets.html("<tr class=\"queueItemOdd\"><td>"+foreignfleets_html.join("</td></tr><tr class=\"queueItemOdd\"><td>")+"</td></tr>");
+      
+      
+    }
+    
 
 });
