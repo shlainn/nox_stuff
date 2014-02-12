@@ -29,6 +29,11 @@ $(document).ready(function()
         draw();
     });
 
+    var translate = {};
+    translate.sendText = $("#sendText").text();
+    translate.no_part_selected = $("#noPartSelected").text();
+
+    
     var scan_animation_start, scan_animation_start2, scan_animation_step, scan_animation_stop = false;
     var animation_progress_previous = 0;
     var show_fleet_overlay = false;
@@ -394,14 +399,12 @@ $(document).ready(function()
     function update_selection(new_select) {
       if(new_select === null) {
         selected_object = null;
-        var no_part_selected = $("#noPartSelected").text();
-        $("#canvasMapItemInfo").html(no_part_selected);
+        $("#canvasMapItemInfo").html(translate.no_part_selected);
       } else if (new_select > 0 && new_select < fleet_index_offset) {
         selected_object = new_select;
         var planet_id = new_select;
         var tipText = spaceParts[planet_id].label+"<br />"+spaceParts[planet_id].posLabel+"<br />";
         if(fleetId !== 0) {// only if this map is for a fleet
-          var sendText = $("#sendText").text();
           var sendId = spaceParts[planet_id].partId;
           switch(spaceParts[planet_id].spacePart)
           {
@@ -415,7 +418,7 @@ $(document).ready(function()
                   tipText += "<a class='helpIndexLink' href='mil_sendFleetToStar.php?id="+sendId+"'>";
                   break;
           }
-          tipText += sendText+"</a>";
+          tipText += translate.sendText+"</a>";
         }
         $("#canvasMapItemInfo").html(tipText);        
       } else if (new_select >= fleet_index_offset) {
@@ -631,11 +634,8 @@ $(document).ready(function()
                 ctx.stroke();
 
                 click_ctx.fillStyle="#"+pad(planet_id.toString(16),6,"0");
-                click_ctx.save();
-                click_ctx.translate(Math.floor(screen_x),Math.floor(screen_y));
-                click_ctx.scale(1,0.5);
-                click_ctx.fillRect(-object_size,-object_size,2*object_size, 2*object_size);
-                click_ctx.restore();
+                click_ctx.fillRect(Math.floor(screen_x-object_size),Math.floor(screen_y-0.5*object_size),Math.floor(2*object_size), Math.floor(object_size));
+
             }
 
             //draw object
@@ -675,7 +675,7 @@ $(document).ready(function()
             //and click target
             if(type != "F") {
               click_ctx.fillStyle="#"+pad(planet_id.toString(16),6,"0");
-              click_ctx.fillRect(Math.floor(screen_x-object_size),Math.floor(screen_y-y_offset-object_size),2*object_size, 2*object_size);
+              click_ctx.fillRect(Math.floor(screen_x-object_size),Math.floor(screen_y-y_offset-object_size),Math.floor(2*object_size), Math.floor(2*object_size));
             } else { // FLEET
               var click_fleet_data = click_ctx.getImageData(Math.floor(screen_x),Math.floor(screen_y-y_offset),1, 1);
               var object_id =(click_fleet_data.data[0] << 16) | (click_fleet_data.data[1] << 8) | click_fleet_data.data[2];
@@ -683,7 +683,7 @@ $(document).ready(function()
                 click_ctx.fillStyle = "#"+pad(index_number.toString(16),6,"0");
                 fleet_index.push([drawlist[i].partId]);
                 index_number += 1;
-                click_ctx.fillRect(Math.floor(screen_x-object_size),Math.floor(screen_y-y_offset-object_size),2*object_size, 2*object_size);
+                click_ctx.fillRect(Math.floor(screen_x-object_size),Math.floor(screen_y-y_offset-object_size),Math.floor(2*object_size), Math.floor(2*object_size));
               } else { //Other fleet here
                 fleet_index[object_id-fleet_index_offset].push(drawlist[i].partId);
               }
