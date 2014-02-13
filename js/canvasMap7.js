@@ -1061,6 +1061,24 @@ $(document).ready(function()
     function fleet_scan_abort() {
       scan_animation_stop = -1;
     }
+
+    function focusFleet(fleetid) {
+      var this_fleet = fleets[fleetid];
+      if(this_fleet === undefined) {
+        return;
+      }
+      target.x = parseInt(this_fleet.x);
+      target.y = parseInt(this_fleet.y);
+      target.z = parseInt(this_fleet.z);
+      selected_object = fleetid;
+      
+      
+      //Zoom on target
+      target.range = current.range > 200 ? 200 : (current.range > 100 ? 100 : current.range);
+      $("#canvasTooltip").css("display", "none");
+      animate_transition_start();
+
+    }
     
     function update_fleet_list() {
       var myCanvasFleets = $("#myCanvasFleets tbody");
@@ -1074,7 +1092,8 @@ $(document).ready(function()
       var myfleets_html = [];
       var foreignfleets_html = [];
       var actions = "";
-      for(i in fleets) {
+      for(var i in fleets) {
+        actions = "<span onclick=\"focusFleet("+i+")\" class=\"noborder clickable\">GoTo</span>";
         if(fleets[i].fleetType == "myFleets" && (list_all_my_fleets === true || calc_dist(current, fleets[i]) < current.range)){
           myfleets_html.push([fleets[i].name, fleets[i].label, fleets[i].state+"/"+fleets[i].mission, fleets[i].destination, actions].join("</td><td>"));
         }
@@ -1094,5 +1113,6 @@ $(document).ready(function()
       
     }
     
+
 
 });
