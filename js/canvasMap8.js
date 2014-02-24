@@ -26,7 +26,7 @@ $(document).ready(function()
     $("#moveBack").click(function() { move(0,-current.range/2,0); });
     
     $("#fleetScan").click(function() { fleet_scan(); });
-    
+
     $("#canvasMyFleetListAll").click(function() { toggleFleetList(0); });
     $("#canvasForeignFleetListAll").click(function() { toggleFleetList(1); });
     
@@ -36,6 +36,7 @@ $(document).ready(function()
     var show_fleet_overlay = false;
     var list_all_my_fleets = false;
     var list_all_foreign_fleets = false;
+    var highlight_starting_position = false;
 
     var drawlist =[], spaceParts = {}, fleets = {}, fleet_sectors, fleet_index, selected_object = null;
     var animation_start;
@@ -81,9 +82,10 @@ $(document).ready(function()
     var target = {x: viewPosX,y: viewPosY,z: viewPosZ, range: viewRange, angleX: 0, angleY: 0};
     var current = {x: viewPosX,y: viewPosY,z: viewPosZ, range: 2000, angleX: -90, angleY: 90};
 
+    var planetSrc = $("#planetSrc").text();
     var spritesheet = new Image();
     spritesheet.onload = function(){getSpaceParts(fleetId, homebaseId, planetId);};
-    spritesheet.src = $("#planetSrc").text();
+    spritesheet.src = planetSrc;
     
     var c=$("#canvasMapArea");
     var ctx=c[0].getContext("2d");
@@ -452,7 +454,11 @@ $(document).ready(function()
       } else if (new_select > 0 && new_select < fleet_index_offset) {
         selected_object = new_select;
         var planet_id = new_select;
-        var tipText = spaceParts[planet_id].label+"<br />"+spaceParts[planet_id].posLabel+"<br />";
+        var idx = types[spaceParts[planet_id].type]+parseInt(spaceParts[planet_id].subType)-1;
+        var sx = (idx%5)*50;
+        var sy = Math.floor(idx/5)*50;
+
+        var tipText = "<span style=\"display:inline-block;width:50px;height:50px;background:url("+planetSrc+") -"+sx+"px -"+sy+"px\"></span><br />"+spaceParts[planet_id].label+"<br />";
         if(fleetId !== 0) {// only if this map is for a fleet
           var sendId = spaceParts[planet_id].partId;
           switch(spaceParts[planet_id].spacePart)
@@ -481,7 +487,7 @@ $(document).ready(function()
             selected_object = index[i];
           }
           this_fleet = fleets[index[i]];          
-          iteminfohtml.push(this_fleet.name+"<br>"+_gt(this_fleet.state)+" / "+_gt(this_fleet.mission)+"<br>("+this_fleet.x+"/"+this_fleet.y+"/"+this_fleet.z+")");
+          iteminfohtml.push("<div>"+this_fleet.name+"<br>"+build_actions_for_fleet(index[i],true)+"</div>");
         }        
         $("#canvasMapItemInfo").html(iteminfohtml.join("<hr>"));
       }       
@@ -670,6 +676,34 @@ $(document).ready(function()
             draw_heatmap();
           }
         }
+        
+        if(highlight_starting_position) {
+          var pos=rotate_around_current({x:viewPosX, y: viewPosY, z: viewPosZ});
+          var screen_x = canvas.padding+(pos.rot_x-min.x)*((canvas.width-2*canvas.padding)/scale);
+          var screen_y = canvas.padding+(pos.rot_y-min.y)*((canvas.height-2*canvas.padding)/scale);
+          ctx.strokeStyle="#0f0";
+          ctx.lineWidth = 2;
+          ctx.lineCap="round";
+          ctx.beginPath();
+          ctx.moveTo(screen_x-10,screen_y);
+          ctx.lineTo(screen_x-15,screen_y-2);
+          ctx.lineTo(screen_x-15,screen_y+2);
+          ctx.lineTo(screen_x-10,screen_y);
+          ctx.moveTo(screen_x+10,screen_y);
+          ctx.lineTo(screen_x+15,screen_y-2);
+          ctx.lineTo(screen_x+15,screen_y+2);
+          ctx.lineTo(screen_x+10,screen_y);
+          ctx.moveTo(screen_x,screen_y-10);
+          ctx.lineTo(screen_x-2,screen_y-15);
+          ctx.lineTo(screen_x+2,screen_y-15);
+          ctx.lineTo(screen_x,screen_y-10);
+          ctx.moveTo(screen_x,screen_y+10);
+          ctx.lineTo(screen_x-2,screen_y+15);
+          ctx.lineTo(screen_x+2,screen_y+15);
+          ctx.lineTo(screen_x,screen_y+10);
+          ctx.stroke();
+        }
+        
         //Now draw the Textboxes on top of everything
         ctx.font="12px Georgia";
         for(i = 0; i < textboxes.length; i += 1)
@@ -827,6 +861,8 @@ $(document).ready(function()
       target.z = min.z+(max.z - min.z)/2;
       target.angleX = 0;
       target.angleY = 0;
+      highlight_starting_position = true;
+      setTimeout(function(){highlight_starting_position = false; draw();},2500);
       animate_transition_start();
     }
 
@@ -1050,16 +1086,16 @@ $(document).ready(function()
       scan_animation_stop = -1;
     }
 
-    function focusFleet(fleetid) {
-      var this_fleet = fleets[fleetid];
+    function focusFleet(fleet_id) {
+      var this_fleet = fleets[fleet_id];
       if(this_fleet === undefined) {
         return;
       }
       target.x = parseInt(this_fleet.x);
       target.y = parseInt(this_fleet.y);
       target.z = parseInt(this_fleet.z);
-      selected_object = fleetid;
-      
+      selected_object = fleet_id;
+      $("#canvasMapItemInfo").html("<div>"+this_fleet.name+"<br>"+build_actions_for_fleet(fleet_id,true)+"</div>");
       
       //Zoom on target
       target.range = current.range > 200 ? 200 : (current.range > 100 ? 100 : current.range);
@@ -1067,25 +1103,27 @@ $(document).ready(function()
       animate_transition_start();
 
     }
-    
-    function build_actions_for_fleet(id) {
+
+    function build_actions_for_fleet(id, for_sidebar) {
       
-      var actions = "<div class=\"actions\" style=\"margin:0;\"><img id=\"focusFleet_"+id+"\" class=\"resPic clickable\" title=\""+_gt("GoToFleet")+"\" alt=\""+_gt("GoToFleet")+"\" src=\"../pics/defaultSkin/callBack.png\" width=\"20\" height=\"20\"></div>";
+      var actions = for_sidebar === undefined ? "<div class=\"actions\" style=\"margin:0;"+(for_sidebar ? "float:none;display:inline;" : "")+"\"><img id=\"focusFleet_"+id+"\" class=\"resPic clickable\" title=\""+_gt("GoToFleet")+"\" alt=\""+_gt("GoToFleet")+"\" src=\"../pics/defaultSkin/callBack.png\" width=\"20\" height=\"20\"></div>" : "";
       if(fleetId === 0) {//This is not a fleet, return
         return actions;
       }
       if(fleets[id].canBeSupplied == 1) {
-        actions += "<div class=\"actions\" style=\"margin:0;\"><a href=\"mil_fleetSupply.php?actionFleetId="+fleets[id].id+"\"><img class=\"resPic\" src=\"../pics/defaultSkin/supply.png\" title=\""+_gt("Supply")+"\" alt=\""+_gt("Supply")+"\" width=\"20\" height=\"20\" style=\"cursor: pointer\" /></a></div>";
+        actions += "<div class=\"actions\" style=\"margin:0;"+(for_sidebar ? "float:none;display:inline;" : "")+"\"><a href=\"mil_fleetSupply.php?actionFleetId="+fleets[id].id+"\"><img class=\"resPic\" src=\"../pics/defaultSkin/supply.png\" title=\""+_gt("Supply")+"\" alt=\""+_gt("Supply")+"\" width=\"20\" height=\"20\" style=\"cursor: pointer\" /></a></div>";
       }
       if(fleets[id].canBeMerged == 1) {
-        actions += "<div class=\"actions\" style=\"margin:0;\"><a href=\"mil_fleetMerge.php?actionFleetId="+fleets[id].id+"\"><img class=\"resPic\" src=\"../pics/defaultSkin/merge.png\" title=\""+_gt("Merge")+"\" alt=\""+_gt("Merge")+"\" width=\"20\" height=\"20\" style=\"cursor: pointer\" /></a></div>";
+        actions += "<div class=\"actions\" style=\"margin:0;"+(for_sidebar ? "float:none;display:inline;" : "")+"\"><a href=\"mil_fleetMerge.php?actionFleetId="+fleets[id].id+"\"><img class=\"resPic\" src=\"../pics/defaultSkin/merge.png\" title=\""+_gt("Merge")+"\" alt=\""+_gt("Merge")+"\" width=\"20\" height=\"20\" style=\"cursor: pointer\" /></a></div>";
       }
       if(fleets[id].canBeAttacked == 1) {
-        actions += "<div class=\"actions\" style=\"margin:0;\"><a href=\"mil_fleetAttack"+(fleets[id].fleetType=="alienFleets"?"Alien":"")+".php?actionFleetId="+fleets[id].id+(parseInt(fleets[id].id)===0?"&actionPlanetId="+fleets[id].planetId:"")+"\"><img class=\"resPic\" src=\"../pics/defaultSkin/attack.png\" title=\""+_gt("AttackFleet")+"\" alt=\""+_gt("AttackFleet")+"\" width=\"20\" height=\"20\" style=\"cursor: pointer\" /></a></div>";
+        actions += "<div class=\"actions\" style=\"margin:0;"+(for_sidebar ? "float:none;display:inline;" : "")+"\"><a href=\"mil_fleetAttack"+(fleets[id].fleetType=="alienFleets"?"Alien":"")+".php?actionFleetId="+fleets[id].id+(parseInt(fleets[id].id)===0?"&actionPlanetId="+fleets[id].planetId:"")+"\"><img class=\"resPic\" src=\"../pics/defaultSkin/attack.png\" title=\""+_gt("AttackFleet")+"\" alt=\""+_gt("AttackFleet")+"\" width=\"20\" height=\"20\" style=\"cursor: pointer\" /></a></div>";
       }
       if(fleets[id].canBeInspected == 1) {
-        actions += "<div class=\"actions\" style=\"margin:0;\"><a href=\"mil_fleetInspect.php?actionFleetId="+fleets[id].id+"\"><img class=\"resPic\" src=\"../pics/defaultSkin/espionage.png\" title=\""+_gt("InspectFleet")+"\" alt=\""+_gt("InspectFleet")+"\" width=\"20\" height=\"20\" style=\"cursor: pointer\" /></a></div>";
+        actions += "<div class=\"actions\" style=\"margin:0;"+(for_sidebar ? "float:none;display:inline;" : "")+"\"><a href=\"mil_fleetInspect.php?actionFleetId="+fleets[id].id+"\"><img class=\"resPic\" src=\"../pics/defaultSkin/espionage.png\" title=\""+_gt("InspectFleet")+"\" alt=\""+_gt("InspectFleet")+"\" width=\"20\" height=\"20\" style=\"cursor: pointer\" /></a></div>";
       }
+      if(actions == "")
+        actions = "<div class=\"actions\" style=\"margin:0;"+(for_sidebar ? "float:none;display:inline;" : "")+"\">---</div>";
       return actions;
     }
     
@@ -1177,6 +1215,9 @@ $(document).ready(function()
           foreignCanvasFleets.html("<tr class=\"queueItemOdd\"><td colspan=\"4\">"+_gt("NoFleetsInRange")+"</td></tr>");
         }
       }
+      $("#myCanvasFleets").trigger("update");
+      $("#foreignCanvasFleets").trigger("update");
+
       $("#canvasMyFleetCount").html("("+myfleets_html.length+" / "+myfleets+")");
       $("#canvasForeignFleetCount").html("("+foreignfleets_html.length+" / "+foreignFleets+")");
       $("#canvasMyFleetListAll, #canvasForeignFleetListAll").css({"display":"inline"});
