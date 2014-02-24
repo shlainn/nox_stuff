@@ -394,9 +394,10 @@ $(document).ready(function()
         var this_fleet;
         for(var i = 0; i < index.length; i += 1) {
           this_fleet = fleets[index[i]];          
-          tooltip_html.push(this_fleet.name+"<br>"+this_fleet.state+" / "+this_fleet.mission+"<br>("+this_fleet.x+"/"+this_fleet.y+"/"+this_fleet.z+")");
+          var fleet_distance = calc_dist({x:viewPosX, y:viewPosY, z:viewPosZ},{x:this_fleet.x, y:this_fleet.y, z:this_fleet.z});
+          tooltip_html.push("<b>"+this_fleet.name+"</b><br />"+_gt(this_fleet.state)+(this_fleet.mission != "NoMission" ? " / "+_gt(this_fleet.mission) :"")+"<br />("+this_fleet.x+"/"+this_fleet.y+"/"+this_fleet.z+")");
         }
-        tooltip.html(tooltip_html.join("<hr>"));
+        tooltip.html(tooltip_html.join("<hr />")+"<hr />"+_gt("Distance")+": "+fleet_distance+" pc");
       }
       var temp = object_id < fleet_index_offset ? rotate_around_current(spaceParts[object_id]) : rotate_around_current(fleets[fleet_index[object_id-fleet_index_offset][0]]);
 
@@ -487,9 +488,9 @@ $(document).ready(function()
             selected_object = index[i];
           }
           this_fleet = fleets[index[i]];          
-          iteminfohtml.push("<div>"+this_fleet.name+"<br>"+build_actions_for_fleet(index[i],true)+"</div>");
+          iteminfohtml.push("<div><b>"+this_fleet.name+"</b><br />"+build_actions_for_fleet(index[i],true)+"</div>");
         }        
-        $("#canvasMapItemInfo").html(iteminfohtml.join("<hr>"));
+        $("#canvasMapItemInfo").html(iteminfohtml.join("<hr />"));
       }       
       draw();
     }
@@ -1095,7 +1096,7 @@ $(document).ready(function()
       target.y = parseInt(this_fleet.y);
       target.z = parseInt(this_fleet.z);
       selected_object = fleet_id;
-      $("#canvasMapItemInfo").html("<div>"+this_fleet.name+"<br>"+build_actions_for_fleet(fleet_id,true)+"</div>");
+      $("#canvasMapItemInfo").html("<div>"+this_fleet.name+"<br />"+build_actions_for_fleet(fleet_id,true)+"</div>");
       
       //Zoom on target
       target.range = current.range > 200 ? 200 : (current.range > 100 ? 100 : current.range);
