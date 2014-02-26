@@ -283,7 +283,7 @@ $(document).ready(function()
         target.angleX = current.angleX;
         draw();
       }
-      c.css({"background-position-x": -(2048-630)*(offsetX/106),"background-position-y": -(2048-630)*(offsetY/106)});
+      c.css({"background-position": (-(2048-630)*(offsetX/106))+"px "+(-(2048-630)*(offsetY/106))+"px"});
     }
     
     var map_drag = false, map_drag_prevent_click = false, map_was_dragged = false;
@@ -391,10 +391,10 @@ $(document).ready(function()
       {
         var index = fleet_index[object_id-fleet_index_offset];
         var tooltip_html = [];
-        var this_fleet;
+        var this_fleet, fleet_distance;
         for(var i = 0; i < index.length; i += 1) {
           this_fleet = fleets[index[i]];          
-          var fleet_distance = calc_dist({x:viewPosX, y:viewPosY, z:viewPosZ},{x:this_fleet.x, y:this_fleet.y, z:this_fleet.z});
+          fleet_distance = calc_dist({x:viewPosX, y:viewPosY, z:viewPosZ},{x:this_fleet.x, y:this_fleet.y, z:this_fleet.z});
           tooltip_html.push("<b>"+this_fleet.name+"</b><br />"+_gt(this_fleet.state)+(this_fleet.mission != "NoMission" ? " / "+_gt(this_fleet.mission) :"")+"<br />("+this_fleet.x+"/"+this_fleet.y+"/"+this_fleet.z+")");
         }
         tooltip.html(tooltip_html.join("<hr />")+"<hr />"+_gt("Distance")+": "+fleet_distance+" pc");
@@ -533,7 +533,7 @@ $(document).ready(function()
           y : current.y - current.range,
           z : current.z - current.range
         };
-        var object_alpha_range = current.range >= 250 ? 0.8 : 0.2+0.6*((current.range-25)/225);
+        var object_alpha_range = current.range >= 250 ? 0.95 : 0.05+0.8*((current.range-25)/225);
         var object_alpha_min = 1 - object_alpha_range;
 
 
@@ -553,20 +553,22 @@ $(document).ready(function()
 
         drawlist.sort(function(a,b){return a.rot_z - b.rot_z;});//sort by z coordinate        
 
+        var x,y,z,type,screen_x,screen_y,screen_x2,screen_y2, object_alpha, object_size, object_angle, idx, sx, sy;
+        
         for(i = 0; i < drawlist.length; i += 1)
         {
-            var x = drawlist[i].rot_x;
-            var y = drawlist[i].rot_y;
-            var z = drawlist[i].rot_z;
-            var type = drawlist[i].spacePart;
+            x = drawlist[i].rot_x;
+            y = drawlist[i].rot_y;
+            z = drawlist[i].rot_z;
+            type = drawlist[i].spacePart;
 
             if((!show_fleet_overlay || current.range > 200) && type == "F")
               continue;
             
             //Position calculations
             //magic numbers here are derived from canvas width and height, with a 10px padding
-            var screen_x = canvas.padding+(x-min.x)*((canvas.width-2*canvas.padding)/scale);
-            var screen_y = canvas.padding+(y-min.y)*((canvas.height-2*canvas.padding)/scale);
+            screen_x = canvas.padding+(x-min.x)*((canvas.width-2*canvas.padding)/scale);
+            screen_y = canvas.padding+(y-min.y)*((canvas.height-2*canvas.padding)/scale);
 
             if(screen_x > (canvas.width - canvas.padding) || screen_y > (canvas.height - canvas.padding))
               continue;
@@ -574,20 +576,20 @@ $(document).ready(function()
               continue;
 
 
-            var object_alpha = object_alpha_min+ object_alpha_range*((z - min.z)/scale);
+            object_alpha = object_alpha_min+ object_alpha_range*((z - min.z)/scale);
             if(object_alpha > 1)
               object_alpha = 1 - (object_alpha - 1);
             if (object_alpha < object_alpha_min)
               object_alpha = object_alpha_min;
 
 
-            var object_size = current.range >= 300 ? draw_config[type].size_min : easeInQuart(300-current.range, draw_config[type].size_min,draw_config[type].size_max - draw_config[type].size_min ,275);
+            object_size = current.range >= 300 ? draw_config[type].size_min : easeInQuart(300-current.range, draw_config[type].size_min,draw_config[type].size_max - draw_config[type].size_min ,275);
 
-            var object_angle = 0;
+            object_angle = 0;
             
-            var idx = drawlist[i].idx;
-            var sx = (idx%5)*50;
-            var sy = Math.floor(idx/5)*50;
+            idx = drawlist[i].idx;
+            sx = (idx%5)*50;
+            sy = Math.floor(idx/5)*50;
 
             ctx.lineWidth = 1;
             if(type != "F") {
@@ -602,8 +604,8 @@ $(document).ready(function()
               //calculate display angle
               var tempvec = {x: drawlist[i].dX*10+drawlist[i].x, y: drawlist[i].dY*10+drawlist[i].y, z: drawlist[i].dZ*10+drawlist[i].z};
               tempvec = rotate_around_current(tempvec);
-              var screen_x2 = canvas.padding+(tempvec.rot_x-min.x)*((canvas.width-2*canvas.padding)/scale) + object_size/2;
-              var screen_y2 = canvas.padding+(tempvec.rot_y-min.y)*((canvas.height-2*canvas.padding)/scale) + object_size/2;
+              screen_x2 = canvas.padding+(tempvec.rot_x-min.x)*((canvas.width-2*canvas.padding)/scale) + object_size/2;
+              screen_y2 = canvas.padding+(tempvec.rot_y-min.y)*((canvas.height-2*canvas.padding)/scale) + object_size/2;
 
               var vsx = screen_x2-screen_x;
               var vsy = (screen_y2)-(screen_y);
@@ -680,8 +682,8 @@ $(document).ready(function()
         
         if(highlight_starting_position) {
           var pos=rotate_around_current({x:viewPosX, y: viewPosY, z: viewPosZ});
-          var screen_x = canvas.padding+(pos.rot_x-min.x)*((canvas.width-2*canvas.padding)/scale);
-          var screen_y = canvas.padding+(pos.rot_y-min.y)*((canvas.height-2*canvas.padding)/scale);
+          screen_x = canvas.padding+(pos.rot_x-min.x)*((canvas.width-2*canvas.padding)/scale);
+          screen_y = canvas.padding+(pos.rot_y-min.y)*((canvas.height-2*canvas.padding)/scale);
           ctx.strokeStyle="#0f0";
           ctx.lineWidth = 2;
           ctx.lineCap="round";
@@ -771,7 +773,7 @@ $(document).ready(function()
         var eyeoffsetX = (90-current.angleY)/180*106;
         var eyeoffsetY = (current.angleX+90)/180*106;
         $("#rotationEye").css({"top": eyeoffsetY-10,"left": eyeoffsetX-10});
-        c.css({"background-position-x": -(2048-630)*(eyeoffsetX/106),"background-position-y": -(2048-630)*(eyeoffsetY/106)});
+        c.css({"background-position": (-(2048-630)*(eyeoffsetX/106))+"px "+(-(2048-630)*(eyeoffsetY/106))+"px"});
 
     }
 
@@ -1123,7 +1125,7 @@ $(document).ready(function()
       if(fleets[id].canBeInspected == 1) {
         actions += "<div class=\"actions\" style=\"margin:0;"+(for_sidebar ? "float:none;display:inline;" : "")+"\"><a href=\"mil_fleetInspect.php?actionFleetId="+fleets[id].id+"\"><img class=\"resPic\" src=\"../pics/defaultSkin/espionage.png\" title=\""+_gt("InspectFleet")+"\" alt=\""+_gt("InspectFleet")+"\" width=\"20\" height=\"20\" style=\"cursor: pointer\" /></a></div>";
       }
-      if(actions == "")
+      if(actions === "")
         actions = "<div class=\"actions\" style=\"margin:0;"+(for_sidebar ? "float:none;display:inline;" : "")+"\">---</div>";
       return actions;
     }
