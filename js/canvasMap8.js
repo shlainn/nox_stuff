@@ -71,6 +71,7 @@ $(document).ready(function()
         "OrangeDwarf" : 30, "RedDwarf" : 31, "YellowDwarf" : 32, "Homebase": 33, "Fleet": 34,
     };
 
+    var skinPath = parseInt($("#skinPath").text()) || "../pics/defaultSkin/";
     var planetId = parseInt($("#planetId").text()) || 0;
     var homebaseId = parseInt($("#homebaseId").text()) || 0;
     var fleetId = parseInt($("#fleetId").text()) || 0;
@@ -120,7 +121,7 @@ $(document).ready(function()
                       d.y = parseInt(result[i].y);
                       d.z = parseInt(result[i].z);
                       d.idx = types[result[i].type]+parseInt(result[i].subType)-1;
-                      d.flags = (result[i].isOwner == 1 ? draw_flags.isOwner : 0) | 
+                      d.flags = (result[i].isOwner == 1 ? draw_flags.isOwner : 0) |
                                 (result[i].inUnion == 1 ? draw_flags.isUnion : 0);
                       drawlist.push(d);
                     }
@@ -308,7 +309,7 @@ $(document).ready(function()
       setTimeout(function(){map_drag_prevent_click = false;},200);
       if(show_fleet_overlay && map_was_dragged) {
         fleet_scan_request_start();
-      }      
+      }
     }
 
     var tooltip_active=false;
@@ -357,7 +358,7 @@ $(document).ready(function()
         var znew = deltaX * Math.sin(angleY) + deltaZ * Math.cos(angleY);
         //rotate around X
         var ynew = deltaY * Math.cos(angleX) + znew * Math.sin(angleX);
-        znew = deltaY * Math.sin(angleX) - znew * Math.cos(angleX);        
+        znew = deltaY * Math.sin(angleX) - znew * Math.cos(angleX);
         
         current.x = map_start_position.x+xnew;
         current.y = map_start_position.y+ynew;
@@ -370,8 +371,8 @@ $(document).ready(function()
         $("#canvasTooltip").css("display", "none");
         return;
       }
+      
       //Tooltip
-
       var click_data = click_ctx.getImageData(offsetX,offsetY,1, 1);
       var object_id =(click_data.data[0] << 16) | (click_data.data[1] << 8) | click_data.data[2];
       var tooltip = $("#canvasTooltip");
@@ -383,31 +384,56 @@ $(document).ready(function()
 
       if(object_id > 0 && object_id < fleet_index_offset)
       {
+        var tooltip_html = [];
+        tooltip_html.push("<div class='tipHeader'>"+_gt("DestInfo")+"</div>");
+        tooltip_html.push("<div class='tipBody'>");
         var distance = calc_dist({x:viewPosX, y:viewPosY, z:viewPosZ},{x:spaceParts[object_id].x, y:spaceParts[object_id].y, z:spaceParts[object_id].z});
-        var tipText = spaceParts[object_id].label+"<br />"+spaceParts[object_id].posLabel+"<br />"+_gt("Distance")+": "+distance+" pc<br />";
-        tooltip.html(tipText);
+        tooltip_html.push(spaceParts[object_id].label+"<br />"+spaceParts[object_id].posLabel+"<br />"+_gt("Distance")+": "+distance+" pc<br />");
+        tooltip_html.push("</div>");
+        tooltip.html(tooltip_html);
       }
       if(object_id > fleet_index_offset)
       {
         var index = fleet_index[object_id-fleet_index_offset];
         var tooltip_html = [];
         var this_fleet, fleet_distance;
+        tooltip_html.push("<div class='tipHeader'>"+_gt("FleetInfo")+"</div>");
+        tooltip_html.push("<div class='tipBody'>");
         for(var i = 0; i < index.length; i += 1) {
-          this_fleet = fleets[index[i]];          
+          if (i > 0) tooltip_html.push("<hr />");
+          this_fleet = fleets[index[i]];
           fleet_distance = calc_dist({x:viewPosX, y:viewPosY, z:viewPosZ},{x:this_fleet.x, y:this_fleet.y, z:this_fleet.z});
-          tooltip_html.push("<b>"+this_fleet.name+"</b><br />"+_gt(this_fleet.state)+(this_fleet.mission != "NoMission" ? " / "+_gt(this_fleet.mission) :"")+"<br />("+this_fleet.x+"/"+this_fleet.y+"/"+this_fleet.z+")");
+          tooltip_html.push("<b>"+this_fleet.name+"</b><br />"+_gt(this_fleet.state)+(this_fleet.mission != "NoMission" ? " / "+_gt(this_fleet.mission) :"")+"<br />");
         }
-        tooltip.html(tooltip_html.join("<hr />")+"<hr />"+_gt("Distance")+": "+fleet_distance+" pc");
+        tooltip_html.push("<hr />"+_gt("Distance")+": "+fleet_distance+" pc<br />");
+        tooltip_html.push("("+this_fleet.x+"/"+this_fleet.y+"/"+this_fleet.z+")");
+        tooltip_html.push("</div>");
+        tooltip.html(tooltip_html);
       }
       var temp = object_id < fleet_index_offset ? rotate_around_current(spaceParts[object_id]) : rotate_around_current(fleets[fleet_index[object_id-fleet_index_offset][0]]);
 
       var screen_x = canvas.padding+(temp.rot_x-min.x)*((canvas.width-2*canvas.padding)/scale);
       var screen_y = canvas.padding+(temp.rot_y-min.y)*((canvas.height-2*canvas.padding)/scale);
       tooltip.css("display", "block");
-      tooltip.offset({"top": parseInt(parentOffset.top+screen_y)+3,"left": parseInt(parentOffset.left)+screen_x+15});
+      adjustTooltipOffset(tooltip, parentOffset, screen_x, screen_y);
     }
     
-    
+    function adjustTooltipOffset(tooltip, parentOffset, screen_x, screen_y)
+    {
+        var x = parseInt(parentOffset.left+screen_x);
+        var y = parseInt(parentOffset.top+screen_y);
+        var height = tooltip.height();
+
+        // move inside browsers view
+        var left = x + tooltip.width() > $(window).width() ? x - tooltip.width() - 10 : x+10;
+        var top = y + height > $(window).height() ? y - height : y;
+        
+        // move up if we leave canvas
+        if (top + height > (parentOffset.top + canvas.height))
+            top = parentOffset.top + canvas.height - height - 2;
+        
+        tooltip.offset({"top": top,"left": left});
+    }
     
     function canvasmap_click(e)
     {
@@ -476,7 +502,7 @@ $(document).ready(function()
           }
           tipText += _gt("SendText")+"</a>";
         }
-        $("#canvasMapItemInfo").html(tipText);        
+        $("#canvasMapItemInfo").html(tipText);
       } else if (new_select >= fleet_index_offset) {
         selected_object = null;
         var index = fleet_index[new_select-fleet_index_offset];
@@ -487,11 +513,17 @@ $(document).ready(function()
           if(selected_object === null) {
             selected_object = index[i];
           }
-          this_fleet = fleets[index[i]];          
-          iteminfohtml.push("<div><b>"+this_fleet.name+"</b><br />"+build_actions_for_fleet(index[i],true)+"</div>");
-        }        
-        $("#canvasMapItemInfo").html(iteminfohtml.join("<hr />"));
-      }       
+          this_fleet = fleets[index[i]];
+          if (i < index.length) {
+            iteminfohtml.push("<div style='border-bottom: 1px solid #000000'>");
+          } else
+          {
+            iteminfohtml.push("<div>");
+          }
+          iteminfohtml.push(this_fleet.name+"<br />"+build_actions_for_fleet(index[i],true)+"</div>");
+        }
+        $("#canvasMapItemInfo").html(iteminfohtml);
+      }
       draw();
     }
 
@@ -533,7 +565,7 @@ $(document).ready(function()
           y : current.y - current.range,
           z : current.z - current.range
         };
-        var object_alpha_range = current.range >= 250 ? 0.95 : 0.05+0.8*((current.range-25)/225);
+        var object_alpha_range = current.range >= 250 ? 0.8 : 0.2+0.6*((current.range-25)/225);
         var object_alpha_min = 1 - object_alpha_range;
 
 
@@ -551,7 +583,7 @@ $(document).ready(function()
           index_number = fleet_index_offset;
         }
 
-        drawlist.sort(function(a,b){return a.rot_z - b.rot_z;});//sort by z coordinate        
+        drawlist.sort(function(a,b){return a.rot_z - b.rot_z;});//sort by z coordinate
 
         var x,y,z,type,screen_x,screen_y,screen_x2,screen_y2, object_alpha, object_size, object_angle, idx, sx, sy;
         
@@ -1109,21 +1141,21 @@ $(document).ready(function()
 
     function build_actions_for_fleet(id, for_sidebar) {
       
-      var actions = for_sidebar === undefined ? "<div class=\"actions\" style=\"margin:0;"+(for_sidebar ? "float:none;display:inline;" : "")+"\"><img id=\"focusFleet_"+id+"\" class=\"resPic clickable\" title=\""+_gt("GoToFleet")+"\" alt=\""+_gt("GoToFleet")+"\" src=\"../pics/defaultSkin/callBack.png\" width=\"20\" height=\"20\"></div>" : "";
+      var actions = for_sidebar === undefined ? "<div class=\"actions\" style=\"margin:0;"+(for_sidebar ? "float:none;display:inline;" : "")+"\"><img id=\"focusFleet_"+id+"\" class=\"resPic clickable\" title=\""+_gt("GoToFleet")+"\" alt=\""+_gt("GoToFleet")+"\" src=\""+skinPath+"selectInMap.png\" width=\"20\" height=\"20\"></div>" : "";
       if(fleetId === 0) {//This is not a fleet, return
         return actions;
       }
       if(fleets[id].canBeSupplied == 1) {
-        actions += "<div class=\"actions\" style=\"margin:0;"+(for_sidebar ? "float:none;display:inline;" : "")+"\"><a href=\"mil_fleetSupply.php?actionFleetId="+fleets[id].id+"\"><img class=\"resPic\" src=\"../pics/defaultSkin/supply.png\" title=\""+_gt("Supply")+"\" alt=\""+_gt("Supply")+"\" width=\"20\" height=\"20\" style=\"cursor: pointer\" /></a></div>";
+        actions += "<div class=\"actions\" style=\"margin:0;"+(for_sidebar ? "float:none;display:inline;" : "")+"\"><a href=\"mil_fleetSupply.php?actionFleetId="+fleets[id].id+"\"><img class=\"resPic\" src=\""+skinPath+"supply.png\" title=\""+_gt("Supply")+"\" alt=\""+_gt("Supply")+"\" width=\"20\" height=\"20\" style=\"cursor: pointer\" /></a></div>";
       }
       if(fleets[id].canBeMerged == 1) {
-        actions += "<div class=\"actions\" style=\"margin:0;"+(for_sidebar ? "float:none;display:inline;" : "")+"\"><a href=\"mil_fleetMerge.php?actionFleetId="+fleets[id].id+"\"><img class=\"resPic\" src=\"../pics/defaultSkin/merge.png\" title=\""+_gt("Merge")+"\" alt=\""+_gt("Merge")+"\" width=\"20\" height=\"20\" style=\"cursor: pointer\" /></a></div>";
+        actions += "<div class=\"actions\" style=\"margin:0;"+(for_sidebar ? "float:none;display:inline;" : "")+"\"><a href=\"mil_fleetMerge.php?actionFleetId="+fleets[id].id+"\"><img class=\"resPic\" src=\""+skinPath+"merge.png\" title=\""+_gt("Merge")+"\" alt=\""+_gt("Merge")+"\" width=\"20\" height=\"20\" style=\"cursor: pointer\" /></a></div>";
       }
       if(fleets[id].canBeAttacked == 1) {
-        actions += "<div class=\"actions\" style=\"margin:0;"+(for_sidebar ? "float:none;display:inline;" : "")+"\"><a href=\"mil_fleetAttack"+(fleets[id].fleetType=="alienFleets"?"Alien":"")+".php?actionFleetId="+fleets[id].id+(parseInt(fleets[id].id)===0?"&actionPlanetId="+fleets[id].planetId:"")+"\"><img class=\"resPic\" src=\"../pics/defaultSkin/attack.png\" title=\""+_gt("AttackFleet")+"\" alt=\""+_gt("AttackFleet")+"\" width=\"20\" height=\"20\" style=\"cursor: pointer\" /></a></div>";
+        actions += "<div class=\"actions\" style=\"margin:0;"+(for_sidebar ? "float:none;display:inline;" : "")+"\"><a href=\"mil_fleetAttack"+(fleets[id].fleetType=="alienFleets"?"Alien":"")+".php?actionFleetId="+fleets[id].id+(parseInt(fleets[id].id)===0?"&actionPlanetId="+fleets[id].planetId:"")+"\"><img class=\"resPic\" src=\""+skinPath+"attack.png\" title=\""+_gt("AttackFleet")+"\" alt=\""+_gt("AttackFleet")+"\" width=\"20\" height=\"20\" style=\"cursor: pointer\" /></a></div>";
       }
       if(fleets[id].canBeInspected == 1) {
-        actions += "<div class=\"actions\" style=\"margin:0;"+(for_sidebar ? "float:none;display:inline;" : "")+"\"><a href=\"mil_fleetInspect.php?actionFleetId="+fleets[id].id+"\"><img class=\"resPic\" src=\"../pics/defaultSkin/espionage.png\" title=\""+_gt("InspectFleet")+"\" alt=\""+_gt("InspectFleet")+"\" width=\"20\" height=\"20\" style=\"cursor: pointer\" /></a></div>";
+        actions += "<div class=\"actions\" style=\"margin:0;"+(for_sidebar ? "float:none;display:inline;" : "")+"\"><a href=\"mil_fleetInspect.php?actionFleetId="+fleets[id].id+"\"><img class=\"resPic\" src=\""+skinPath+"espionage.png\" title=\""+_gt("InspectFleet")+"\" alt=\""+_gt("InspectFleet")+"\" width=\"20\" height=\"20\" style=\"cursor: pointer\" /></a></div>";
       }
       if(actions === "")
         actions = "<div class=\"actions\" style=\"margin:0;"+(for_sidebar ? "float:none;display:inline;" : "")+"\">---</div>";
@@ -1228,7 +1260,7 @@ $(document).ready(function()
         if(fleets.hasOwnProperty(i)) {
           $("#focusFleet_"+i).click(function(){focusFleet(this.id.split("_")[1]);});
         }
-      }      
+      }
     }
     
 
