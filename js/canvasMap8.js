@@ -392,19 +392,20 @@ $(document).ready(function()
         tooltip_html.push("</div>");
         tooltip.html(tooltip_html);
       }
-      if(object_id > fleet_index_offset)
+      if(object_id >= fleet_index_offset)
       {
         var index = fleet_index[object_id-fleet_index_offset];
         var tooltip_html = [];
         var this_fleet, fleet_distance;
         tooltip_html.push("<div class='tipHeader'>"+_gt("FleetInfo")+"</div>");
         tooltip_html.push("<div class='tipBody'>");
+        var tooltip_fleets = [];
         for(var i = 0; i < index.length; i += 1) {
-          if (i > 0) tooltip_html.push("<hr />");
           this_fleet = fleets[index[i]];
           fleet_distance = calc_dist({x:viewPosX, y:viewPosY, z:viewPosZ},{x:this_fleet.x, y:this_fleet.y, z:this_fleet.z});
-          tooltip_html.push("<b>"+this_fleet.name+"</b><br />"+_gt(this_fleet.state)+(this_fleet.mission != "NoMission" ? " / "+_gt(this_fleet.mission) :"")+"<br />");
+          tooltip_fleets.push("<b>"+this_fleet.name+"</b><br />"+_gt(this_fleet.state)+(this_fleet.mission != "NoMission" ? " / "+_gt(this_fleet.mission) :"")+"<br />");
         }
+        tooltip_html.push("<div style='padding:2px'>"+tooltip_fleets.join("</div><div style='border-top: 1px solid #000000;padding:2px'>")+"</div>");
         tooltip_html.push("<hr />"+_gt("Distance")+": "+fleet_distance+" pc<br />");
         tooltip_html.push("("+this_fleet.x+"/"+this_fleet.y+"/"+this_fleet.z+")");
         tooltip_html.push("</div>");
@@ -514,15 +515,9 @@ $(document).ready(function()
             selected_object = index[i];
           }
           this_fleet = fleets[index[i]];
-          if (i < index.length) {
-            iteminfohtml.push("<div style='border-bottom: 1px solid #000000'>");
-          } else
-          {
-            iteminfohtml.push("<div>");
-          }
-          iteminfohtml.push(this_fleet.name+"<br />"+build_actions_for_fleet(index[i],true)+"</div>");
+          iteminfohtml.push(this_fleet.name+"<br />"+build_actions_for_fleet(index[i],true));
         }
-        $("#canvasMapItemInfo").html(iteminfohtml);
+        $("#canvasMapItemInfo").html("<div>"+iteminfohtml.join("</div><div style='border-top: 1px solid #000000'>")+"</div>");
       }
       draw();
     }
