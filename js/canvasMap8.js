@@ -153,7 +153,7 @@ $(document).ready(function()
                 }
                 scan_animation_stop = 1;
                 draw();
-              
+                fleets_loaded = true;
             },
             error: function()
             {
@@ -1200,7 +1200,7 @@ $(document).ready(function()
         actions += "<div class=\"actions\" style=\"margin:0;"+(for_sidebar ? "float:none;display:inline;" : "")+"\"><a href=\"mil_fleetInspect.php?actionFleetId="+fleets[id].id+"\"><img class=\"resPic\" src=\""+skinPath+"espionage.png\" title=\""+_gt("InspectFleet")+"\" alt=\""+_gt("InspectFleet")+"\" width=\"20\" height=\"20\" style=\"cursor: pointer\" /></a></div>";
       }
       if(actions === "")
-        actions = "<div class=\"actions\" style=\"margin:0;"+(for_sidebar ? "float:none;display:inline;" : "")+"\">---</div>";
+        actions = "<div class=\"actions\" style=\"margin:0;"+(for_sidebar ? "float:none;display:inline;" : "")+"\">"+_gt("NoAction")+"</div>";
       return actions;
     }
     
