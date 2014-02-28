@@ -427,7 +427,7 @@ $(document).ready(function()
           for(j = 0; j < columns; j += 1) {
             k = i*columns+j;
             if(k < tooltip_fleets.length)
-              temp_html += "<td style=\"width:140px\">"+tooltip_fleets[k]+"</td>";
+              temp_html += "<td style=\"width:140px;\">"+tooltip_fleets[k]+"</td>";
           }
           temp_html += "</tr>";
         }
@@ -545,22 +545,22 @@ $(document).ready(function()
             selected_object = index[i];
           }
           this_fleet = fleets[index[i]];
-          iteminfohtml.push(shorten_name(this_fleet.name,14)+"<br />"+build_actions_for_fleet(index[i],true));
+          iteminfohtml.push("<label title=\""+this_fleet.name+"\">"+shorten_name(this_fleet.name,14)+"</label><br />"+build_actions_for_fleet(index[i],true));
         }
         var columns = Math.ceil(iteminfohtml.length / tooltip_length_limit);
         var temp = "", temp2;
         var end;
 
         for(i = 0; i < columns; i += 1) {
-          temp += "<div class=\"infocol infocol"+i+" clickable\" style=\""+( i>0 ? "display:none" : "display:block")+"\">";
+          temp += "<div class=\"infocol infocol"+i+"\" style=\""+( i>0 ? "display:none" : "display:block")+"\">";
           end = ((i+1)*tooltip_length_limit) > iteminfohtml.length ? iteminfohtml.length : ((i+1)*tooltip_length_limit);
           temp += "<div>"+iteminfohtml.slice(i*tooltip_length_limit, end).join("</div><div style='border-top: 1px solid #000000'>")+"</div>";
           temp += "</div>";
         }
         if(columns > 1) {
-          temp += "<div>Seite ";
+          temp += "<div style=\"font-weight:bold;position:absolute;bottom:5px;width:106px;\">Seite ";
           for(i = 0; i < columns; i += 1) {
-            temp += "<span onclick=\"$('.infocol').css('display','none');$('.infocol"+i+"').css('display','block');\">"+(i+1)+"</span> ";
+            temp += "<span class=\"infospan infospan"+i+" clickable\" style=\""+( i>0 ? "text-decoration:none" : "text-decoration:underline")+"\" onclick=\"$('.infocol').css('display','none');$('.infocol"+i+"').css('display','block');$('.infospan').css('text-decoration','none');$('.infospan"+i+"').css('text-decoration','underline');\">"+(i+1)+"</span> ";
           }
           temp += "</div>";
         }
