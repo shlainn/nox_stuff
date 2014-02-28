@@ -38,6 +38,8 @@ $(document).ready(function()
     var list_all_foreign_fleets = false;
     var highlight_starting_position = false;
 
+    var tooltip_length_limit = 4;
+    
     var drawlist =[], spaceParts = {}, fleets = {}, fleet_sectors, fleet_index, selected_object = null;
     var animation_start;
     var animation_running;
@@ -325,6 +327,14 @@ $(document).ready(function()
     function calc_dist(source, target) {
       return Math.sqrt(Math.pow(source.x - target.x , 2) + Math.pow(source.y - target.y , 2) + Math.pow(source.z - target.z , 2)).toFixed(3);
     }
+    
+    function shorten_name(name, length) {
+      var l = Math.floor(length/2-1);
+      if(name.length <= length)
+        return name
+      else
+        return name.substring(0,l)+".."+name.substring(name.length-l);
+    }
 
     function canvasmap_move(e)
     {
@@ -337,6 +347,8 @@ $(document).ready(function()
       var offsetX = Math.floor(e.pageX - parentOffset.left);
       var offsetY = Math.floor(e.pageY - parentOffset.top);
 
+      var i,j,k;
+      
       var scale = current.range*2;
 
       var min = {
@@ -346,6 +358,8 @@ $(document).ready(function()
       };
       var angleY = (current.angleY % 360) / 180 * Math.PI;
       var angleX = (current.angleX % 360) / 180 * Math.PI;
+      
+      var width = 140;
 
       //drag
       if(map_drag) {
@@ -400,17 +414,32 @@ $(document).ready(function()
         tooltip_html.push("<div class='tipHeader'>"+_gt("FleetInfo")+"</div>");
         tooltip_html.push("<div class='tipBody'>");
         var tooltip_fleets = [];
-        for(var i = 0; i < index.length; i += 1) {
+        for( i = 0; i < index.length; i += 1) {
           this_fleet = fleets[index[i]];
           fleet_distance = calc_dist({x:viewPosX, y:viewPosY, z:viewPosZ},{x:this_fleet.x, y:this_fleet.y, z:this_fleet.z});
-          tooltip_fleets.push("<b>"+this_fleet.name+"</b><br />"+_gt(this_fleet.state)+(this_fleet.mission != "NoMission" ? " / "+_gt(this_fleet.mission) :"")+"<br />");
+          tooltip_fleets.push("<b>"+shorten_name(this_fleet.name, 16)+"</b><br />"+_gt(this_fleet.state)+(this_fleet.mission != "NoMission" ? " / "+_gt(this_fleet.mission) :"")+"<br />");
         }
-        tooltip_html.push("<div style='padding:2px'>"+tooltip_fleets.join("</div><div style='border-top: 1px solid #000000;padding:2px'>")+"</div>");
+        var columns = Math.ceil(tooltip_fleets.length / tooltip_length_limit);
+        var rows = Math.ceil(tooltip_fleets.length / columns);
+        temp_html = "";
+        for(i = 0; i < rows; i += 1) {
+          temp_html += "<tr>";
+          for(j = 0; j < columns; j += 1) {
+            k = i*columns+j;
+            if(k < tooltip_fleets.length)
+              temp_html += "<td style=\"width:140px\">"+tooltip_fleets[k]+"</td>";
+          }
+          temp_html += "</tr>";
+        }
+        tooltip_html.push("<table style=\"width:100%\">"+temp_html+"</table>");
+        
         tooltip_html.push("<hr />"+_gt("Distance")+": "+fleet_distance+" pc<br />");
         tooltip_html.push("("+this_fleet.x+"/"+this_fleet.y+"/"+this_fleet.z+")");
         tooltip_html.push("</div>");
-        tooltip.html(tooltip_html);
+        tooltip.html(tooltip_html.join(""));
+        width = 140 * columns;
       }
+      tooltip.css("width", width);
       var temp = object_id < fleet_index_offset ? rotate_around_current(spaceParts[object_id]) : rotate_around_current(fleets[fleet_index[object_id-fleet_index_offset][0]]);
 
       var screen_x = canvas.padding+(temp.rot_x-min.x)*((canvas.width-2*canvas.padding)/scale);
@@ -510,14 +539,32 @@ $(document).ready(function()
 
         var iteminfohtml = [];
         var this_fleet;
-        for(var i = 0; i < index.length; i += 1) {
+        var i, j, k;
+        for(i = 0; i < index.length; i += 1) {
           if(selected_object === null) {
             selected_object = index[i];
           }
           this_fleet = fleets[index[i]];
-          iteminfohtml.push(this_fleet.name+"<br />"+build_actions_for_fleet(index[i],true));
+          iteminfohtml.push(shorten_name(this_fleet.name,14)+"<br />"+build_actions_for_fleet(index[i],true));
         }
-        $("#canvasMapItemInfo").html("<div>"+iteminfohtml.join("</div><div style='border-top: 1px solid #000000'>")+"</div>");
+        var columns = Math.ceil(iteminfohtml.length / tooltip_length_limit);
+        var temp = "", temp2;
+        var end;
+
+        for(i = 0; i < columns; i += 1) {
+          temp += "<div class=\"infocol infocol"+i+" clickable\" style=\""+( i>0 ? "display:none" : "display:block")+"\">";
+          end = ((i+1)*tooltip_length_limit) > iteminfohtml.length ? iteminfohtml.length : ((i+1)*tooltip_length_limit);
+          temp += "<div>"+iteminfohtml.slice(i*tooltip_length_limit, end).join("</div><div style='border-top: 1px solid #000000'>")+"</div>";
+          temp += "</div>";
+        }
+        if(columns > 1) {
+          temp += "<div>Seite ";
+          for(i = 0; i < columns; i += 1) {
+            temp += "<span onclick=\"$('.infocol').css('display','none');$('.infocol"+i+"').css('display','block');\">"+(i+1)+"</span> ";
+          }
+          temp += "</div>";
+        }
+        $("#canvasMapItemInfo").html(temp);
       }
       draw();
     }
