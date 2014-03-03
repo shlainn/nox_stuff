@@ -29,7 +29,7 @@ $(document).ready(function()
 
     $("#canvasMyFleetListAll").click(function() { toggleFleetList(0); });
     $("#canvasForeignFleetListAll").click(function() { toggleFleetList(1); });
-    
+
     var scan_animation_start, scan_animation_start2, scan_animation_step, scan_animation_stop = false;
     var animation_progress_previous = 0;
     var fleets_loaded = false;
@@ -113,6 +113,7 @@ $(document).ready(function()
                 if (dataArray.length > 0)
                 {
                     var result = jQuery.parseJSON(dataArray);
+                    var idx;
                     for(var i = 0; i < result.length; i += 1) {
                       var partId = parseInt(result[i].partId);
                       spaceParts[partId] = result[i];
@@ -122,7 +123,13 @@ $(document).ready(function()
                       d.x = parseInt(result[i].x);
                       d.y = parseInt(result[i].y);
                       d.z = parseInt(result[i].z);
-                      d.idx = types[result[i].type]+parseInt(result[i].subType)-1;
+                      d.rot_x = parseInt(result[i].x);
+                      d.rot_y = parseInt(result[i].y);
+                      d.rot_z = parseInt(result[i].z);
+                      idx = types[result[i].type]+parseInt(result[i].subType)-1;
+                      d.sx =(idx%5)*50;
+                      d.sy =Math.floor(idx/5)*50;
+                      
                       d.flags = (result[i].isOwner == 1 ? draw_flags.isOwner : 0) |
                                 (result[i].inUnion == 1 ? draw_flags.isUnion : 0);
                       drawlist.push(d);
@@ -175,6 +182,7 @@ $(document).ready(function()
                 if (dataArray.length > 0)
                 {
                     var result = jQuery.parseJSON(dataArray);
+                    var idx;
                     for(var fleetType in result) {
                       if(result.hasOwnProperty(fleetType)) {
                         for(var i = 0; i < result[fleetType].length; i += 1) {
@@ -186,10 +194,16 @@ $(document).ready(function()
                           d.x = parseInt(result[fleetType][i].x);
                           d.y = parseInt(result[fleetType][i].y);
                           d.z = parseInt(result[fleetType][i].z);
+                          d.rot_x = parseInt(result[i].x);
+                          d.rot_y = parseInt(result[i].y);
+                          d.rot_z = parseInt(result[i].z);
                           d.dX = parseInt(result[fleetType][i].dX);
                           d.dY = parseInt(result[fleetType][i].dY);
                           d.dZ = parseInt(result[fleetType][i].dZ);
-                          d.idx = types.Fleet+fleet_draw_config[fleetType].subType-1;
+                          idx = types.Fleet+fleet_draw_config[fleetType].subType-1;
+                          d.sx =(idx%5)*50;
+                          d.sy =Math.floor(idx/5)*50;
+                          
                           d.flags = 0;
                           if(fleets[partId] === undefined) {
                             drawlist.push(d);
@@ -612,7 +626,7 @@ $(document).ready(function()
 
 
         var textboxes = [];
-        //Rotate and sort back to front
+        // Rotate and sort back to front
         for(i = 0; i < drawlist.length; i += 1) {
             drawlist[i] = rotate_around_current(drawlist[i]);
             if(drawlist[i].spacePart == "F") {
@@ -627,7 +641,10 @@ $(document).ready(function()
 
         drawlist.sort(function(a,b){return a.rot_z - b.rot_z;});//sort by z coordinate
 
-        var x,y,z,type,screen_x,screen_y,screen_x2,screen_y2, object_alpha, object_size, object_angle, idx, sx, sy;
+        var x,y,z,type,screen_x,screen_y,screen_x2,screen_y2, object_alpha, object_size = {}, this_object_size, object_angle, sx, sy, offset;
+        for(i in draw_config) {
+          object_size[i] = Math.floor(current.range >= 300 ? draw_config[i].size_min : easeInQuart(300-current.range, draw_config[i].size_min,draw_config[i].size_max - draw_config[i].size_min ,275)); 
+        }
         
         for(i = 0; i < drawlist.length; i += 1)
         {
@@ -635,14 +652,15 @@ $(document).ready(function()
             y = drawlist[i].rot_y;
             z = drawlist[i].rot_z;
             type = drawlist[i].spacePart;
+            this_object_size = object_size[type];
 
             if((!show_fleet_overlay || current.range > 200) && type == "F")
               continue;
             
             //Position calculations
             //magic numbers here are derived from canvas width and height, with a 10px padding
-            screen_x = canvas.padding+(x-min.x)*((canvas.width-2*canvas.padding)/scale);
-            screen_y = canvas.padding+(y-min.y)*((canvas.height-2*canvas.padding)/scale);
+            screen_x = Math.floor(canvas.padding+(x-min.x)*((canvas.width-2*canvas.padding)/scale));
+            screen_y = Math.floor(canvas.padding+(y-min.y)*((canvas.height-2*canvas.padding)/scale));
 
             if(screen_x > (canvas.width - canvas.padding) || screen_y > (canvas.height - canvas.padding))
               continue;
@@ -657,13 +675,10 @@ $(document).ready(function()
               object_alpha = object_alpha_min;
 
 
-            object_size = current.range >= 300 ? draw_config[type].size_min : easeInQuart(300-current.range, draw_config[type].size_min,draw_config[type].size_max - draw_config[type].size_min ,275);
-
             object_angle = 0;
             
-            idx = drawlist[i].idx;
-            sx = (idx%5)*50;
-            sy = Math.floor(idx/5)*50;
+            sx = drawlist[i].sx;
+            sy = drawlist[i].sy;
 
             ctx.lineWidth = 1;
             if(type != "F") {
@@ -671,15 +686,15 @@ $(document).ready(function()
             }
             else {//Fleet
               object_alpha = 1;
-
-              screen_x += object_size/2;//offset fleet vs planet
-              screen_y += object_size/2;
+              offset = Math.floor(this_object_size/2);//offset fleet vs planet
+              screen_x += offset;
+              screen_y += offset;
               
               //calculate display angle
               var tempvec = {x: drawlist[i].dX*10+drawlist[i].x, y: drawlist[i].dY*10+drawlist[i].y, z: drawlist[i].dZ*10+drawlist[i].z};
               tempvec = rotate_around_current(tempvec);
-              screen_x2 = canvas.padding+(tempvec.rot_x-min.x)*((canvas.width-2*canvas.padding)/scale) + object_size/2;
-              screen_y2 = canvas.padding+(tempvec.rot_y-min.y)*((canvas.height-2*canvas.padding)/scale) + object_size/2;
+              screen_x2 = canvas.padding+(tempvec.rot_x-min.x)*((canvas.width-2*canvas.padding)/scale) + offset;
+              screen_y2 = canvas.padding+(tempvec.rot_y-min.y)*((canvas.height-2*canvas.padding)/scale) + offset;
 
               var vsx = screen_x2-screen_x;
               var vsy = (screen_y2)-(screen_y);
@@ -694,46 +709,46 @@ $(document).ready(function()
             ctx.rotate(object_angle*Math.PI/180);
             ctx.globalAlpha = 1;
             ctx.globalCompositeOperation = "destination-out";
-            ctx.drawImage(spritesheet,sx,sy,50,50,0-object_size,0-object_size,2*object_size, 2*object_size);
+            ctx.drawImage(spritesheet,sx,sy,50,50,0-this_object_size,0-this_object_size,2*this_object_size, 2*this_object_size);
             ctx.globalCompositeOperation = "source-over";
 
             ctx.globalAlpha = object_alpha;
             //draw circles for selection and ownership
             var grd;
             if(selected_object !== null && drawlist[i].partId == selected_object){
-                grd=ctx.createRadialGradient(0,0,0,0,0,object_size*1.8);
+                grd=ctx.createRadialGradient(0,0,0,0,0,this_object_size*1.8);
                 grd.addColorStop(0.8,"#000");
                 grd.addColorStop(0.9,"#ff0");
                 ctx.fillStyle=grd;
                 ctx.beginPath();
-                ctx.arc(0,0,object_size*1.8,0,2*Math.PI);
+                ctx.arc(0,0,this_object_size*1.8,0,2*Math.PI);
                 ctx.fill();
             }
             if(drawlist[i].flags & (draw_flags.isOwner | draw_flags.isUnion)){
-                grd=ctx.createRadialGradient(0,0,0,0,0,object_size*1.5);
+                grd=ctx.createRadialGradient(0,0,0,0,0,this_object_size*1.5);
                 grd.addColorStop(0.8,"#000");
                 grd.addColorStop(0.9,drawlist[i].flags & draw_flags.isOwner ? "#0f0" : "#f80");
                 ctx.fillStyle=grd;
                 ctx.beginPath();
-                ctx.arc(0,0,object_size*1.5,0,2*Math.PI);
+                ctx.arc(0,0,this_object_size*1.5,0,2*Math.PI);
                 ctx.fill();
 
             }
             //draw the sprite itself
-            ctx.drawImage(spritesheet,sx,sy,50,50,0-object_size,0-object_size,2*object_size, 2*object_size);
+            ctx.drawImage(spritesheet,sx,sy,50,50,0-this_object_size,0-this_object_size,2*this_object_size, 2*this_object_size);
             ctx.restore();
             //and click target
             if(type != "F") {
               click_ctx.fillStyle="#"+pad(planet_id.toString(16),6,"0");
-              click_ctx.fillRect(Math.floor(screen_x-object_size),Math.floor(screen_y-object_size),Math.floor(2*object_size), Math.floor(2*object_size));
+              click_ctx.fillRect(screen_x-this_object_size,screen_y-this_object_size,2*this_object_size, 2*this_object_size);
             } else { // FLEET
-              var click_fleet_data = click_ctx.getImageData(Math.floor(screen_x),Math.floor(screen_y),1, 1);
+              var click_fleet_data = click_ctx.getImageData(screen_x,screen_y,1, 1);
               var object_id =(click_fleet_data.data[0] << 16) | (click_fleet_data.data[1] << 8) | click_fleet_data.data[2];
               if(object_id < fleet_index_offset) { //no other fleet here
                 click_ctx.fillStyle = "#"+pad(index_number.toString(16),6,"0");
                 fleet_index.push([drawlist[i].partId]);
                 index_number += 1;
-                click_ctx.fillRect(Math.floor(screen_x-object_size),Math.floor(screen_y-object_size),Math.floor(2*object_size), Math.floor(2*object_size));
+                click_ctx.fillRect(screen_x-this_object_size,screen_y-this_object_size,2*this_object_size, 2*this_object_size);
               } else { //Other fleet here
                 fleet_index[object_id-fleet_index_offset].push(drawlist[i].partId);
               }
